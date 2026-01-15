@@ -4945,7 +4945,7 @@ function ready() {
     ];
 
     function initNumberleGame() {
-        numberleState.equation = NUMBERLE_EQUATIONS[Math.floor(Math.random() * NUMBERLE_EQUATIONS.length)];
+        numberleState.equation = generateNumberleEquation();
         numberleState.guesses = [];
         numberleState.currentGuess = '';
         numberleState.gameOver = false;
