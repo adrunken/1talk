@@ -833,25 +833,16 @@
             gameState.guessLocation = null;
 
             // Clear previous markers
-            if (guessMarker) guessMarker.remove();
-            if (actualMarker) actualMarker.remove();
-
-            if (distanceSource) {
-                distanceSource.setData({
-                    type: 'FeatureCollection',
-                    features: []
-                });
-            }
+            if (guessMarker) map.removeLayer(guessMarker);
+            if (actualMarker) map.removeLayer(actualMarker);
+            if (distanceCircle) map.removeLayer(distanceCircle);
 
             // Hide results
             document.getElementById('roundResults').classList.remove('show');
             document.getElementById('mapInstructions').classList.remove('hidden');
 
             // Reset map
-            map.flyTo({
-                center: [0, 20],
-                zoom: 2
-            });
+            map.setView([20, 0], 2);
 
             // Start timer
             if (timerInterval) clearInterval(timerInterval);
