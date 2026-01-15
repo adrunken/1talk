@@ -970,30 +970,6 @@
             return Math.round(GAME_CONFIG.maxPoints * (1 - distance / GAME_CONFIG.maxDistance));
         }
 
-        function createCircle(center, radiusKm) {
-            const points = 64;
-            const features = [];
-            const coords = [];
-
-            for (let i = 0; i < points; i++) {
-                const angle = (i / points) * Math.PI * 2;
-                const dx = radiusKm * Math.cos(angle) / 111;
-                const dy = radiusKm * Math.sin(angle) / (111 * Math.cos(center.lat * Math.PI / 180));
-                coords.push([center.lng + dx, center.lat + dy]);
-            }
-            coords.push(coords[0]);
-
-            return {
-                type: 'FeatureCollection',
-                features: [{
-                    type: 'Feature',
-                    geometry: {
-                        type: 'Polygon',
-                        coordinates: [coords]
-                    }
-                }]
-            };
-        }
 
         // ============= DISPLAY UPDATES =============
         function updateScoresDisplay() {
