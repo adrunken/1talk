@@ -760,37 +760,23 @@
         }
 
         async function fetchMapillaryImage(location) {
-            const query = `
-                [out:json];
-                (
-                  node["imagery_type"="mapillary"](around:1000,${location.lat},${location.lng});
-                );
-                out center;
-            `;
-
             try {
                 // Query Mapillary API for images near the location
-                const searchUrl = `https://graph.mapillary.com/images?fields=id,geometry&access_token=${MAPILLARY_API_KEY}&bbox=${location.lng - 0.01},${location.lat - 0.01},${location.lng + 0.01},${location.lat + 0.01}`;
-                
+                const bbox = `${location.lng - 0.05},${location.lat - 0.05},${location.lng + 0.05},${location.lat + 0.05}`;
+                const searchUrl = `https://graph.mapillary.com/images?fields=id,thumb_256_url&bbox=${bbox}&access_token=${MAPILLARY_API_KEY}`;
+
                 const response = await fetch(searchUrl);
                 const data = await response.json();
 
                 if (data.data && data.data.length > 0) {
                     const image = data.data[0];
-                    const imageId = image.id;
-
-                    // Fetch the image URL
-                    const imageUrl = `https://graph.mapillary.com/${imageId}/images?fields=thumb_256_url&access_token=${MAPILLARY_API_KEY}`;
-                    const imageResponse = await fetch(imageUrl);
-                    const imageData = await imageResponse.json();
-
-                    if (imageData.data && imageData.data.thumb_256_url) {
-                        document.getElementById('streetViewImage').src = imageData.data.thumb_256_url;
-                        document.getElementById('imageDetails').textContent = `Location: ${location.name}`;
+                    if (image.thumb_256_url) {
+                        document.getElementById('streetViewImage').src = image.thumb_256_url;
+                        document.getElementById('imageDetails').textContent = `Location: ${location.name} (Mapillary)`;
                         return;
                     }
                 }
-                
+
                 // Fallback if no Mapillary coverage
                 loadFallbackImage(location);
             } catch (error) {
@@ -800,10 +786,30 @@
         }
 
         function loadFallbackImage(location) {
-            // Use a static map image as fallback
-            const mapboxStaticUrl = `https://api.mapbox.com/styles/v1/mapbox/dark-v11/static/${location.lng},${location.lat},12,0/800x600?access_token=${MAPBOX_ACCESS_TOKEN}`;
-            document.getElementById('streetViewImage').src = mapboxStaticUrl;
-            document.getElementById('imageDetails').textContent = `Location: ${location.name} (Map View)`;
+            // Use a placeholder with location info
+            const canvas = document.createElement('canvas');
+            canvas.width = 800;
+            canvas.height = 600;
+            const ctx = canvas.getContext('2d');
+
+            // Dark background
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Text
+            ctx.fillStyle = '#cbd5e1';
+            ctx.font = 'bold 24px Inter, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(`Street View: ${location.name}`, 400, 250);
+
+            ctx.font = '16px Inter, sans-serif';
+            ctx.fillStyle = '#94a3b8';
+            ctx.fillText(`Latitude: ${location.lat.toFixed(4)}°`, 400, 300);
+            ctx.fillText(`Longitude: ${location.lng.toFixed(4)}°`, 400, 330);
+            ctx.fillText('(Mapillary coverage unavailable in this area)', 400, 380);
+
+            document.getElementById('streetViewImage').src = canvas.toDataURL();
+            document.getElementById('imageDetails').textContent = `Location: ${location.name}`;
         }
 
         // ============= ZOOM CONTROLS =============
