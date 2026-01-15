@@ -1955,6 +1955,40 @@ html[data-theme="dark"] .wordle-key:hover:not(:disabled) {
   </div>
 </div>
 
+<!-- Numberle Game Modal -->
+<div id="numberle-overlay" class="hidden numberle-overlay">
+  <div class="numberle-modal">
+    <!-- Header -->
+    <div class="numberle-header">
+      <h2 class="numberle-title">NUMBERLE</h2>
+      <button id="numberle-close" class="numberle-close-btn" title="Close">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- Game Container -->
+    <div class="numberle-container">
+      <!-- Game Status -->
+      <div id="numberle-game-status" class="numberle-status">Make an equation in 6 tries</div>
+
+      <!-- Game Board (6 rows x 8 columns) -->
+      <div id="numberle-board" class="numberle-board">
+        <!-- Tiles will be added here -->
+      </div>
+
+      <!-- Keyboard -->
+      <div id="numberle-keyboard" class="numberle-keyboard">
+        <!-- Keyboard rows will be added here -->
+      </div>
+
+      <!-- Reset Button -->
+      <button id="numberle-reset-btn" class="numberle-reset-btn">
+        Play Again
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- Chess Game Setup Modal -->
 <div id="chess-setup-overlay" class="chess-setup-overlay">
   <div class="chess-setup-modal">
