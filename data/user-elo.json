@@ -1,0 +1,43 @@
+{
+  "testuser": {
+    "elo": 1229,
+    "gamesPlayed": 1,
+    "wins": 1
+  },
+  "testuser2": {
+    "elo": 1176,
+    "gamesPlayed": 1,
+    "wins": 0
+  },
+  "testuser3": {
+    "elo": 1200,
+    "gamesPlayed": 1,
+    "wins": 0,
+    "draws": 1
+  },
+  "zahir": {
+    "elo": 1214,
+    "gamesPlayed": 10,
+    "wins": 5
+  },
+  "no": {
+    "elo": 1205,
+    "gamesPlayed": 2,
+    "wins": 1
+  },
+  "x": {
+    "elo": 1250,
+    "gamesPlayed": 3,
+    "wins": 3
+  },
+  "zahr": {
+    "elo": 1171,
+    "gamesPlayed": 2,
+    "wins": 0
+  },
+  "sd": {
+    "elo": 1186,
+    "gamesPlayed": 1,
+    "wins": 0
+  }
+}
