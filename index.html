@@ -6036,10 +6036,11 @@ function ready() {
                 ws.send(JSON.stringify(payload));
             }
 
-            // Open Geoguessr game page
+            // Open Geoguessr game in modal
             if (gameId) {
                 var baseUrl = window.location.protocol + '//' + window.location.host;
-                window.open(baseUrl + '/geoguessr.html?gameId=' + gameId + '&difficulty=' + (difficulty || 'medium'), '_blank');
+                var gameUrl = baseUrl + '/geoguessr.html?gameId=' + gameId + '&difficulty=' + (difficulty || 'medium');
+                showGeoguessrGameModal(gameUrl);
             }
         } else {
             // Chess invite
