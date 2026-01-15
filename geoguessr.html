@@ -633,7 +633,9 @@
             map = L.map('guessMap', {
                 center: [20, 0],
                 zoom: 2,
-                attributionControl: false
+                attributionControl: false,
+                maxBounds: [[-90, -180], [90, 180]],
+                maxBoundsViscosity: 1.0
             });
 
             L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
