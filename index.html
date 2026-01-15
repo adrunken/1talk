@@ -4905,17 +4905,29 @@ function ready() {
 
     // ============= NUMBERLE GAME =============
 
-    const NUMBERLE_EQUATIONS = [
-        '10+10=20', '30-10=20', '50-25=25', '40-12=28', '35-15=20',
-        '27-12=15', '100/5=20', '33-11=22', '44-22=22', '55-33=22',
-        '3+4*2=11', '5+5+2=12', '3*2+4=10', '10-5+3=8', '99-88=11',
-        '77-66=11', '100/2=50', '120/2=60', '144/2=72', '200/4=50',
-        '4+4+4=12', '5+5+5=15', '10-2-2=6', '21-10=11', '32-20=12',
-        '11+11=22', '22-11=11', '33-22=11', '42-21=21', '50-30=20',
-        '60-40=20', '70-50=20', '80-60=20', '99-77=22', '88-66=22',
-        '76-54=22', '88-55=33', '99-66=33', '96-48=48', '84-42=42',
-        '25+25=50', '10+20=30', '15+15=30', '12+18=30', '20+15=35'
-    ];
+    function generateNumberleEquation() {
+        // Generate random equations that are 8 characters long
+        const num1 = Math.floor(Math.random() * 90) + 10; // 10-99
+        const num2 = Math.floor(Math.random() * 90) + 10; // 10-99
+        const operators = ['+', '-', '*', '/'];
+        const operator = operators[Math.floor(Math.random() * operators.length)];
+
+        let result;
+        try {
+            result = Math.floor(eval(num1 + operator + num2));
+        } catch (e) {
+            result = 0;
+        }
+
+        if (result < 0) result = Math.abs(result);
+
+        const equation = `${num1}${operator}${num2}=${result}`;
+        if (equation.length === 8) {
+            return equation;
+        }
+        // Recursively try again if not 8 characters
+        return generateNumberleEquation();
+    }
 
     let numberleState = {
         equation: '',
