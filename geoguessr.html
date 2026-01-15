@@ -743,10 +743,10 @@
         }
 
         function loadFallbackImage(location) {
-            // Create a canvas-based placeholder with location info
+            // Create a canvas-based placeholder with location info (16:9 aspect ratio)
             const canvas = document.createElement('canvas');
-            canvas.width = 800;
-            canvas.height = 600;
+            canvas.width = 960;
+            canvas.height = 540;
             const ctx = canvas.getContext('2d');
 
             // Dark background
