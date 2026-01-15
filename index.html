@@ -5935,6 +5935,19 @@ function ready() {
         updateGeoguessrSetupSelection();
     });
 
+    // Geoguessr game modal handlers
+    $('#geoguessr-game-close').on('click', function(e) {
+        e.preventDefault();
+        hideGeoguessrGameModal();
+    });
+
+    // Close game modal when clicking outside
+    $('#geoguessr-game-overlay').on('click', function(e) {
+        if (e.target.id === 'geoguessr-game-overlay') {
+            hideGeoguessrGameModal();
+        }
+    });
+
     // Admin delete users modal handlers
     $('#admin-delete-users-close').on('click', function() {
         hideAdminDeleteUsersModal();
