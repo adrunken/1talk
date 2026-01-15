@@ -5688,6 +5688,66 @@ function ready() {
         }
     });
 
+    // Geoguessr setup modal handlers
+    $('#geoguessr-setup-btn').on('click', function(e) {
+        e.preventDefault();
+        // Get all users except current user
+        var me = $('#username').text().trim();
+        var allUsersForSetup = [];
+        $('#connected .user-info .user-name span').each(function() {
+            var userName = $(this).text().trim();
+            if (userName && userName !== me) {
+                allUsersForSetup.push(userName);
+            }
+        });
+        showGeoguessrSetupModal(allUsersForSetup);
+        $('#games-dropdown-menu').addClass('hidden');
+    });
+
+    $('#geoguessr-cancel-btn').on('click', function(e) {
+        e.preventDefault();
+        hideGeoguessrSetupModal();
+    });
+
+    $(document).on('click', '.geoguessr-setup-option-btn', function(e) {
+        e.preventDefault();
+        var $this = $(this);
+        var mode = $this.data('mode');
+        var difficulty = $this.data('difficulty');
+
+        if (mode) {
+            // Mode button clicked
+            $('[data-mode].geoguessr-setup-option-btn').removeClass('selected');
+            $this.addClass('selected');
+            geoguessrSetupState.mode = mode;
+            // Show/hide players section based on mode
+            if (mode === 'multiplayer') {
+                $('#geoguessr-players-section').show();
+            } else {
+                $('#geoguessr-players-section').hide();
+            }
+        } else if (difficulty) {
+            // Difficulty button clicked
+            $('[data-difficulty].geoguessr-setup-option-btn').removeClass('selected');
+            $this.addClass('selected');
+            geoguessrSetupState.difficulty = difficulty;
+        }
+
+        validateGeoguessrSetupSelection();
+        updateGeoguessrSetupUI();
+    });
+
+    $('#geoguessr-create-btn').on('click', function(e) {
+        e.preventDefault();
+        if (!$(this).prop('disabled')) {
+            createGeoguessrGame();
+        }
+    });
+
+    $(document).on('change', '#geoguessr-users-list input[type="checkbox"]', function() {
+        updateGeoguessrSetupSelection();
+    });
+
     // Admin delete users modal handlers
     $('#admin-delete-users-close').on('click', function() {
         hideAdminDeleteUsersModal();
