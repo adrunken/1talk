@@ -874,6 +874,25 @@ html[data-theme="dark"] .wordle-tile {
     animation-delay: 0.2s;
 }
 
+/* Dark theme overrides for feedback colors */
+html[data-theme="dark"] .wordle-tile.correct {
+    background: #6aaa64 !important;
+    border-color: #6aaa64 !important;
+    color: white !important;
+}
+
+html[data-theme="dark"] .wordle-tile.present {
+    background: #c9b458 !important;
+    border-color: #c9b458 !important;
+    color: white !important;
+}
+
+html[data-theme="dark"] .wordle-tile.absent {
+    background: #787c7e !important;
+    border-color: #787c7e !important;
+    color: white !important;
+}
+
 @keyframes popIn {
     0% { transform: scale(0.8); }
     50% { transform: scale(1.1); }
