@@ -4015,7 +4015,8 @@ function ready() {
 
         if (geoguessrSetupState.mode === 'single') {
             // Single-player: open the game directly
-            window.open('/geoguessr.html?mode=single&difficulty=' + geoguessrSetupState.difficulty, '_blank');
+            var baseUrl = window.location.protocol + '//' + window.location.host;
+            window.open(baseUrl + '/geoguessr.html?mode=single&difficulty=' + geoguessrSetupState.difficulty, '_blank');
             hideGeoguessrSetupModal();
         } else {
             // Multiplayer: send invites to selected users
