@@ -757,24 +757,24 @@
             ctx.fillStyle = '#cbd5e1';
             ctx.font = 'bold 28px Inter, sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText(location.name, 400, 180);
+            ctx.fillText(location.name, 480, 150);
 
             // Coordinates
             ctx.font = '16px Inter, sans-serif';
             ctx.fillStyle = '#94a3b8';
-            ctx.fillText(`Latitude: ${location.lat.toFixed(4)}°`, 400, 250);
-            ctx.fillText(`Longitude: ${location.lng.toFixed(4)}°`, 400, 290);
+            ctx.fillText(`Latitude: ${location.lat.toFixed(4)}°`, 480, 210);
+            ctx.fillText(`Longitude: ${location.lng.toFixed(4)}°`, 480, 240);
 
             // Info text
             ctx.font = 'italic 14px Inter, sans-serif';
             ctx.fillStyle = '#64748b';
-            ctx.fillText('Mapillary coverage unavailable in this area', 400, 360);
-            ctx.fillText('Click on the map to guess this location', 400, 390);
+            ctx.fillText('Mapillary coverage unavailable in this area', 480, 300);
+            ctx.fillText('Click on the map to guess this location', 480, 325);
 
             // Pin icon
             ctx.fillStyle = '#60a5fa';
             ctx.font = 'bold 60px Arial';
-            ctx.fillText('📍', 400, 480);
+            ctx.fillText('📍', 480, 420);
 
             document.getElementById('streetViewImage').src = canvas.toDataURL();
             document.getElementById('imageDetails').textContent = `Location: ${location.name}`;
