@@ -815,6 +815,13 @@
             }
         });
 
+        // Enter key to submit guess
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && gameState.roundActive && guessMarker) {
+                handlePlayerReady();
+            }
+        });
+
         // ============= MAP INTERACTION =============
         function handleMapClick(event) {
             if (!gameState.roundActive) return;
