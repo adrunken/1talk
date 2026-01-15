@@ -7004,6 +7004,16 @@ function ready() {
         $('#invites').append(item);
     }
 
+    function addGeoguessrInvite(fromUser, gameId, difficulty) {
+        console.log('[geoguessr-client] Creating geoguessr invite item:', {from: fromUser, gameId: gameId, difficulty: difficulty});
+        var item = $('<div class="invite-item" />').attr('data-from', fromUser).attr('data-game-id', gameId || '').attr('data-game-type', 'geoguessr').attr('data-difficulty', difficulty || 'medium').text('Geoguessr game from ' + fromUser);
+        var actions = $('<span class="invite-actions" />');
+        actions.append('<button class="invite-btn invite-accept">Accept</button>');
+        actions.append('<button class="invite-btn invite-decline">Decline</button>');
+        item.append(actions);
+        $('#invites').append(item);
+    }
+
     function showRejoinPrompt() {
         if (!$('#invites #rejoin-game').length) {
             var wrap = $('<div class="user-row" id="rejoin-wrapper" />');
