@@ -2793,6 +2793,121 @@ wss.on('connection', (ws, req) => {
         }
       }
     }
+    else if (msg.type === 'geoguessr_invite') {
+      const inviter = users.get(ws);
+      const targets = Array.isArray(msg.to) ? msg.to : [String(msg.to || '')];
+      const difficulty = msg.difficulty || 'medium';
+
+      if (!inviter) {
+        send(ws, { type: 'geoguessr_error', message: 'Not authenticated' });
+      } else {
+        // Create a new game session
+        const gid = nextGameId++;
+        const sessionKey = inviter + '::geoguessr::' + difficulty;
+
+        geoguessrGames.set(gid, {
+          gameId: gid,
+          inviter: inviter,
+          players: [inviter],
+          difficulty: difficulty,
+          round: 1,
+          playerScores: { [inviter]: 0 },
+          playerWs: new Map([[inviter, ws]]),
+          gameState: 'waiting',
+          createdAt: Date.now()
+        });
+
+        console.log('[geoguessr] Game created:', {gameId: gid, inviter, difficulty});
+
+        // Send invites to all targets
+        for (const target of targets) {
+          if (!target || inviter === target) continue;
+
+          const invitePayload = {
+            type: 'geoguessr_invite',
+            from: inviter,
+            gameId: gid,
+            difficulty: difficulty
+          };
+          console.log('[geoguessr] Sending invite:', {gameId: gid, from: inviter, to: target});
+          sendToUsername(target, invitePayload);
+        }
+
+        send(ws, { type: 'geoguessr_invite_created', gameId: gid });
+      }
+    }
+    else if (msg.type === 'geoguessr_invite_accept') {
+      const acceptor = users.get(ws);
+      const gameId = msg.gameId;
+
+      if (!acceptor) {
+        send(ws, { type: 'geoguessr_error', message: 'Not authenticated' });
+        return;
+      }
+
+      if (!geoguessrGames.has(gameId)) {
+        send(ws, { type: 'geoguessr_error', message: 'Game not found' });
+        return;
+      }
+
+      const game = geoguessrGames.get(gameId);
+
+      // Add player to game
+      if (!game.players.includes(acceptor)) {
+        game.players.push(acceptor);
+        game.playerScores[acceptor] = 0;
+      }
+      game.playerWs.set(acceptor, ws);
+
+      console.log('[geoguessr] Player accepted:', {gameId, player: acceptor, totalPlayers: game.players.length});
+
+      // Send game start to all players if we have at least 2 players
+      if (game.players.length >= 2 && game.gameState === 'waiting') {
+        game.gameState = 'started';
+        const startPayload = {
+          type: 'geoguessr_game_start',
+          gameId: gameId,
+          players: game.players,
+          difficulty: game.difficulty
+        };
+
+        for (const [playerName, playerWs] of game.playerWs.entries()) {
+          send(playerWs, startPayload);
+        }
+      }
+    }
+    else if (msg.type === 'geoguessr_player_guess') {
+      const gameId = msg.gameId;
+      const player = users.get(ws);
+      const distance = msg.distance;
+      const points = msg.points;
+
+      if (!geoguessrGames.has(gameId)) {
+        send(ws, { type: 'geoguessr_error', message: 'Game not found' });
+        return;
+      }
+
+      const game = geoguessrGames.get(gameId);
+
+      // Update player score
+      if (game.playerScores[player] !== undefined) {
+        game.playerScores[player] += points;
+      }
+
+      // Broadcast guess to all players
+      const guessPayload = {
+        type: 'geoguessr_player_guess',
+        player: player,
+        distance: distance,
+        points: points
+      };
+
+      for (const [_, playerWs] of game.playerWs.entries()) {
+        send(playerWs, guessPayload);
+      }
+
+      console.log('[geoguessr] Player guess:', {gameId, player, distance, points, totalScore: game.playerScores[player]});
+    }
     else if (msg.type === 'chess_move') {
       const gid = msg.game_id;
       const src = String(msg.from || '');
