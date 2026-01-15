@@ -4903,6 +4903,281 @@ function ready() {
         }
     });
 
+    // ============= NUMBERLE GAME =============
+
+    const NUMBERLE_EQUATIONS = [
+        '1+2=3', '2+2=4', '3+3=6', '1+1=2', '5+5=10',
+        '10-5=5', '8-3=5', '6-2=4', '9-4=5', '7-3=4',
+        '2*3=6', '3*2=6', '4*2=8', '5*2=10', '3*3=9',
+        '6/2=3', '8/2=4', '10/2=5', '12/3=4', '15/3=5',
+        '1+2+3=6', '2+3+4=9', '1+1+1=3', '2+2+2=6', '5+1+1=7',
+        '10-3-2=5', '8-2-1=5', '9-3-2=4', '7-2-1=4', '6-1-2=3',
+        '2*2+1=5', '3*2+1=7', '4*2-1=7', '5*2-3=7', '2*3+1=7',
+        '8/2+1=5', '6/2+2=5', '10/2+1=6', '4/2+3=5', '12/2+1=7',
+        '1+2*3=7', '2+3*2=8', '3+4*1=7', '1*2+3=5', '2*3+1=7',
+        '9-2*2=5', '10-3*2=4', '8-2*1=6', '7-1*2=5', '6-1*2=4',
+        '10/2-1=4', '8/2+1=5', '6/2+3=6', '12/2-1=5', '20/2+1=11'
+    ];
+
+    let numberleState = {
+        equation: '',
+        guesses: [],
+        currentGuess: '',
+        gameOver: false,
+        won: false,
+        keyStates: {}
+    };
+
+    const NUMBERLE_KEYBOARD_LAYOUT = [
+        ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
+        ['+', '-', '*', '/', '='],
+        ['Enter', 'Backspace']
+    ];
+
+    function initNumberleGame() {
+        numberleState.equation = NUMBERLE_EQUATIONS[Math.floor(Math.random() * NUMBERLE_EQUATIONS.length)];
+        numberleState.guesses = [];
+        numberleState.currentGuess = '';
+        numberleState.gameOver = false;
+        numberleState.won = false;
+        numberleState.keyStates = {};
+
+        $('#numberle-game-status').html('Make an equation in 6 tries<br><span style="font-size: 0.75rem; opacity: 0.7;">Type your answer and press ENTER</span>');
+        $('#numberle-game-status').css('color', 'var(--text-secondary)');
+        $('#numberle-reset-btn').hide();
+        $('#numberle-board').empty();
+
+        renderNumberleBoard();
+        renderNumberleKeyboard();
+    }
+
+    function renderNumberleBoard() {
+        const $board = $('#numberle-board');
+        $board.empty();
+
+        for (let i = 0; i < 6; i++) {
+            const guess = numberleState.guesses[i] || '';
+            const $row = $('<div>').addClass('numberle-row');
+            const isRevealing = i < numberleState.guesses.length;
+
+            for (let j = 0; j < 8; j++) {
+                const letter = guess[j] || '';
+                const $tile = $('<div>')
+                    .addClass('numberle-tile')
+                    .text(letter)
+                    .attr('data-index', `${i}-${j}`);
+
+                if (letter) {
+                    $tile.addClass('filled');
+                    if (isRevealing) {
+                        const result = getNumberleLetterResult(letter, j, guess);
+                        if (result) {
+                            $tile.addClass(result);
+                        }
+                    }
+                }
+
+                $row.append($tile);
+            }
+
+            if (i === numberleState.guesses.length && !numberleState.gameOver) {
+                for (let j = 0; j < 8; j++) {
+                    const letter = numberleState.currentGuess[j] || '';
+                    const $tile = $('<div>')
+                        .addClass('numberle-tile')
+                        .text(letter);
+
+                    if (letter) {
+                        $tile.addClass('filled');
+                    }
+
+                    $row.append($tile);
+                }
+            }
+
+            $board.append($row);
+        }
+    }
+
+    function renderNumberleKeyboard() {
+        const $keyboard = $('#numberle-keyboard');
+        $keyboard.empty();
+
+        NUMBERLE_KEYBOARD_LAYOUT.forEach((row, rowIndex) => {
+            const $row = $('<div>').addClass('numberle-keyboard-row');
+
+            row.forEach(key => {
+                let text = key;
+                let classes = 'numberle-key';
+
+                if (key === 'Enter') {
+                    text = 'ENTER';
+                } else if (key === 'Backspace') {
+                    text = 'BACK';
+                }
+
+                const state = numberleState.keyStates[key];
+                if (state) {
+                    classes += ' ' + state;
+                }
+
+                const $button = $('<button>')
+                    .addClass(classes)
+                    .text(text)
+                    .attr('data-key', key)
+                    .on('click', function(e) {
+                        e.preventDefault();
+                        handleNumberleKeyPress(key);
+                    });
+
+                $row.append($button);
+            });
+
+            $keyboard.append($row);
+        });
+    }
+
+    function getNumberleLetterResult(letter, position, guess) {
+        if (!guess || guess.length !== 8) return null;
+
+        const correctChar = numberleState.equation[position];
+
+        if (letter === correctChar) {
+            return 'correct';
+        }
+
+        if (numberleState.equation.includes(letter)) {
+            return 'present';
+        }
+
+        return 'absent';
+    }
+
+    function handleNumberleKeyPress(key) {
+        if (numberleState.gameOver) return;
+
+        if (key === 'Enter') {
+            submitNumberleGuess();
+        } else if (key === 'Backspace') {
+            numberleState.currentGuess = numberleState.currentGuess.slice(0, -1);
+            renderNumberleBoard();
+        } else if (numberleState.currentGuess.length < 8) {
+            numberleState.currentGuess += key;
+            renderNumberleBoard();
+        }
+    }
+
+    function isValidNumberleEquation(str) {
+        if (str.length !== 8) return false;
+        if (!str.includes('=')) return false;
+
+        const parts = str.split('=');
+        if (parts.length !== 2) return false;
+
+        const leftStr = parts[0];
+        const rightStr = parts[1];
+
+        if (!leftStr || !rightStr) return false;
+
+        try {
+            const leftResult = eval(leftStr);
+            const rightResult = parseInt(rightStr);
+
+            return leftResult === rightResult;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    function submitNumberleGuess() {
+        if (numberleState.currentGuess.length !== 8) {
+            shake('#numberle-board');
+            $('#numberle-game-status').text('Must be 8 characters').css('color', '#ef4444');
+            setTimeout(() => {
+                $('#numberle-game-status').text('').css('color', 'var(--text-secondary)');
+            }, 1500);
+            return;
+        }
+
+        if (!isValidNumberleEquation(numberleState.currentGuess)) {
+            shake('#numberle-board');
+            $('#numberle-game-status').text('Not a valid equation').css('color', '#ef4444');
+            setTimeout(() => {
+                $('#numberle-game-status').text('').css('color', 'var(--text-secondary)');
+            }, 1500);
+            return;
+        }
+
+        numberleState.guesses.push(numberleState.currentGuess);
+
+        for (let i = 0; i < 8; i++) {
+            const letter = numberleState.currentGuess[i];
+            const result = getNumberleLetterResult(letter, i, numberleState.currentGuess);
+
+            if (result && (!numberleState.keyStates[letter] || result === 'correct')) {
+                numberleState.keyStates[letter] = result;
+            }
+        }
+
+        if (numberleState.currentGuess === numberleState.equation) {
+            numberleState.gameOver = true;
+            numberleState.won = true;
+
+            setTimeout(() => {
+                const messages = ['Genius!', 'Brilliant!', 'Awesome!', 'Great!', 'Nice!', 'Got it!'];
+                const tries = numberleState.guesses.length;
+                const msg = messages[Math.min(tries - 1, messages.length - 1)];
+                $('#numberle-game-status').text(msg).css('color', '#6aaa64');
+                $('#numberle-reset-btn').show();
+            }, 600);
+        } else if (numberleState.guesses.length >= 6) {
+            numberleState.gameOver = true;
+            setTimeout(() => {
+                $('#numberle-game-status').text(`The equation was: ${numberleState.equation}`).css('color', '#787c7e');
+                $('#numberle-reset-btn').show();
+            }, 600);
+        }
+
+        numberleState.currentGuess = '';
+        renderNumberleBoard();
+        renderNumberleKeyboard();
+    }
+
+    // Numberle event handlers
+    $('#numberle-setup-btn').on('click', function(e) {
+        e.preventDefault();
+        $('#games-dropdown-menu').addClass('hidden');
+        $('#numberle-overlay').removeClass('hidden');
+        initNumberleGame();
+    });
+
+    $('#numberle-close').on('click', function(e) {
+        e.preventDefault();
+        $('#numberle-overlay').addClass('hidden');
+    });
+
+    $('#numberle-reset-btn').on('click', function(e) {
+        e.preventDefault();
+        initNumberleGame();
+    });
+
+    // Keyboard support for Numberle
+    $(document).on('keydown', function(e) {
+        if ($('#numberle-overlay').hasClass('hidden')) return;
+
+        const key = e.key;
+        if (['1','2','3','4','5','6','7','8','9','0','+','-','*','/',='].includes(key)) {
+            e.preventDefault();
+            handleNumberleKeyPress(key);
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            handleNumberleKeyPress('Enter');
+        } else if (e.key === 'Backspace') {
+            e.preventDefault();
+            handleNumberleKeyPress('Backspace');
+        }
+    });
+
     function showFirstLoginModal() {
         var $overlay = $('#first-login');
         var $input = $('#first-username-input');
