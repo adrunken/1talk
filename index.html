@@ -1673,6 +1673,22 @@ html[data-theme="dark"] .numberle-key:hover:not(:disabled) {
 
 .setup-validation-msg.show { display: block; }
 
+/* Geoguessr Game Modal */
+.geoguessr-game-overlay { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(15, 23, 42, 0.5); z-index: 1002; }
+.geoguessr-game-overlay.show { display: flex; }
+
+.geoguessr-game-modal { background: var(--bg-secondary); border: 1px solid var(--border-light); border-radius: var(--radius-xl); box-shadow: var(--shadow-lg); width: 95%; height: 95vh; max-width: 1400px; display: flex; flex-direction: column; }
+
+.geoguessr-game-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-light); background: var(--bg-tertiary); }
+
+.geoguessr-game-title { font-size: 1.25rem; font-weight: 600; color: var(--text-primary); margin: 0; }
+
+.geoguessr-game-close { background: none; border: none; color: var(--text-primary); font-size: 1.5rem; cursor: pointer; padding: 0.5rem; border-radius: var(--radius-md); transition: all 0.2s ease; }
+
+.geoguessr-game-close:hover { background: var(--accent-secondary); color: var(--accent-primary); }
+
+.geoguessr-game-content { flex: 1; overflow: hidden; padding: 0; }
+
 /* 4-Player Chess Board Styles */
 .chessboard {
     display: grid;
