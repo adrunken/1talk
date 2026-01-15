@@ -5996,7 +5996,8 @@ function ready() {
 
             // Open Geoguessr game page
             if (gameId) {
-                window.open('/geoguessr.html?gameId=' + gameId + '&difficulty=' + (difficulty || 'medium'), '_blank');
+                var baseUrl = window.location.protocol + '//' + window.location.host;
+                window.open(baseUrl + '/geoguessr.html?gameId=' + gameId + '&difficulty=' + (difficulty || 'medium'), '_blank');
             }
         } else {
             // Chess invite
