@@ -740,7 +740,7 @@
         }
 
         function loadFallbackImage(location) {
-            // Use a placeholder with location info
+            // Create a canvas-based placeholder with location info
             const canvas = document.createElement('canvas');
             canvas.width = 800;
             canvas.height = 600;
@@ -750,17 +750,28 @@
             ctx.fillStyle = '#1e293b';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Text
+            // Location name
             ctx.fillStyle = '#cbd5e1';
-            ctx.font = 'bold 24px Inter, sans-serif';
+            ctx.font = 'bold 28px Inter, sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText(`Street View: ${location.name}`, 400, 250);
+            ctx.fillText(location.name, 400, 180);
 
+            // Coordinates
             ctx.font = '16px Inter, sans-serif';
             ctx.fillStyle = '#94a3b8';
-            ctx.fillText(`Latitude: ${location.lat.toFixed(4)}°`, 400, 300);
-            ctx.fillText(`Longitude: ${location.lng.toFixed(4)}°`, 400, 330);
-            ctx.fillText('(Mapillary coverage unavailable in this area)', 400, 380);
+            ctx.fillText(`Latitude: ${location.lat.toFixed(4)}°`, 400, 250);
+            ctx.fillText(`Longitude: ${location.lng.toFixed(4)}°`, 400, 290);
+
+            // Info text
+            ctx.font = 'italic 14px Inter, sans-serif';
+            ctx.fillStyle = '#64748b';
+            ctx.fillText('Mapillary coverage unavailable in this area', 400, 360);
+            ctx.fillText('Click on the map to guess this location', 400, 390);
+
+            // Pin icon
+            ctx.fillStyle = '#60a5fa';
+            ctx.font = 'bold 60px Arial';
+            ctx.fillText('📍', 400, 480);
 
             document.getElementById('streetViewImage').src = canvas.toDataURL();
             document.getElementById('imageDetails').textContent = `Location: ${location.name}`;
