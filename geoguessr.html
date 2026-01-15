@@ -627,59 +627,17 @@
         }
 
         function initMap() {
-            mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
-            
-            map = new mapboxgl.Map({
-                container: 'guessMap',
-                style: 'mapbox://styles/mapbox/dark-v11',
-                center: [0, 20],
+            map = L.map('guessMap', {
+                center: [20, 0],
                 zoom: 2,
                 attributionControl: false
             });
 
-            map.on('load', () => {
-                addDistanceSourceAndLayer();
-            });
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                maxZoom: 19
+            }).addTo(map);
 
             map.on('click', handleMapClick);
-        }
-
-        function addDistanceSourceAndLayer() {
-            if (map.getSource('distance-circle')) {
-                map.removeLayer('distance-circle-layer');
-                map.removeSource('distance-circle');
-            }
-
-            map.addSource('distance-circle', {
-                type: 'geojson',
-                data: {
-                    type: 'FeatureCollection',
-                    features: []
-                }
-            });
-
-            map.addLayer({
-                id: 'distance-circle-layer',
-                type: 'fill',
-                source: 'distance-circle',
-                paint: {
-                    'fill-color': '#3b82f6',
-                    'fill-opacity': 0.1
-                }
-            });
-
-            map.addLayer({
-                id: 'distance-circle-stroke',
-                type: 'line',
-                source: 'distance-circle',
-                paint: {
-                    'line-color': '#3b82f6',
-                    'line-width': 2,
-                    'line-opacity': 0.8
-                }
-            });
-
-            distanceSource = map.getSource('distance-circle');
         }
 
         function connectWebSocket() {
