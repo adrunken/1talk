@@ -4904,18 +4904,60 @@ function ready() {
     // ============= NUMBERLE GAME =============
 
     function generateNumberleEquation() {
-        // Generate random equations that are 8 characters long
-        const predefinedEquations = [
-            '10+10=20', '30-10=20', '50-25=25', '40-12=28', '35-15=20',
-            '27-12=15', '33-11=22', '44-22=22', '55-33=22', '99-88=11',
-            '77-66=11', '88-55=33', '99-66=33', '96-48=48', '84-42=42',
-            '25+25=50', '10+20=30', '15+15=30', '12+18=30', '20+15=35',
-            '13+13=26', '14+14=28', '16+16=32', '18+18=36', '19+19=38',
-            '11+11=22', '21+21=42', '23+23=46', '24+24=48', '26+26=52',
-            '50-20=30', '60-30=30', '70-40=30', '80-50=30', '90-60=30'
-        ];
+        // Dynamic equation generator supporting +, -, *, / operators
+        const operators = ['+', '-', '*', '/'];
+        let equation = '';
+        let attempts = 0;
+        const maxAttempts = 100;
 
-        return predefinedEquations[Math.floor(Math.random() * predefinedEquations.length)];
+        while (!equation && attempts < maxAttempts) {
+            attempts++;
+
+            // Generate random operands and operator
+            const operand1 = Math.floor(Math.random() * 100) + 1; // 1-100
+            const operand2 = Math.floor(Math.random() * 20) + 1;  // 1-20
+            const operator = operators[Math.floor(Math.random() * operators.length)];
+
+            let result;
+
+            // Calculate result based on operator
+            switch(operator) {
+                case '+':
+                    result = operand1 + operand2;
+                    break;
+                case '-':
+                    result = operand1 - operand2;
+                    break;
+                case '*':
+                    result = operand1 * operand2;
+                    break;
+                case '/':
+                    // Only use division if it results in an integer
+                    if (operand1 % operand2 === 0) {
+                        result = operand1 / operand2;
+                    } else {
+                        continue; // Skip this iteration if division doesn't result in integer
+                    }
+                    break;
+            }
+
+            // Format equation: "left=right" must be exactly 8 characters
+            const leftStr = operand1 + operator + operand2;
+            const rightStr = result.toString();
+            const equation_str = leftStr + '=' + rightStr;
+
+            // Check if equation is exactly 8 characters
+            if (equation_str.length === 8) {
+                equation = equation_str;
+            }
+        }
+
+        // Fallback to a simple addition equation if no valid 8-char equation found
+        if (!equation) {
+            equation = '10+10=20';
+        }
+
+        return equation;
     }
 
     let numberleState = {
