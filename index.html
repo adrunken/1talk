@@ -4033,6 +4033,16 @@ function ready() {
         }
     }
 
+    function showGeoguessrGameModal(gameUrl) {
+        $('#geoguessr-game-iframe').attr('src', gameUrl);
+        $('#geoguessr-game-overlay').addClass('show');
+    }
+
+    function hideGeoguessrGameModal() {
+        $('#geoguessr-game-overlay').removeClass('show');
+        $('#geoguessr-game-iframe').attr('src', '');
+    }
+
     function createGeoguessrGame() {
         if (!geoguessrSetupState.mode || !geoguessrSetupState.difficulty) {
             flashStatus('Please select game mode and difficulty');
@@ -4045,10 +4055,11 @@ function ready() {
         }
 
         if (geoguessrSetupState.mode === 'single') {
-            // Single-player: open the game directly
+            // Single-player: open the game in a modal
             var baseUrl = window.location.protocol + '//' + window.location.host;
-            window.open(baseUrl + '/geoguessr.html?mode=single&difficulty=' + geoguessrSetupState.difficulty, '_blank');
+            var gameUrl = baseUrl + '/geoguessr.html?mode=single&difficulty=' + geoguessrSetupState.difficulty;
             hideGeoguessrSetupModal();
+            showGeoguessrGameModal(gameUrl);
         } else {
             // Multiplayer: send invites to selected users
             geoguessrSetupState.selectedUsers.forEach(function(toUser) {
