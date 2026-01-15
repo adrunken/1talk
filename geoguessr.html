@@ -6,7 +6,9 @@
     <title>Geoguessr - Location Guessing Game</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDummyKey" async defer></script>
+    <!-- Leaflet Map Library -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -101,13 +103,16 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            aspect-ratio: 16 / 9;
         }
 
         .street-view-image {
             width: 100%;
             height: 100%;
             object-fit: contain;
+            object-position: center;
             cursor: zoom-in;
+            image-rendering: high-quality;
         }
 
         .street-view-image.zoomed {
@@ -422,6 +427,30 @@
             background: #64748b;
         }
 
+        /* Mapbox custom markers */
+        .marker-icon {
+            width: 30px;
+            height: 40px;
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(-45deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .marker-icon.guess {
+            background: #fbbf24;
+            transform: rotate(-45deg);
+        }
+
+        .marker-icon.actual {
+            background: #ef4444;
+            transform: rotate(-45deg);
+        }
+
         @media (max-width: 1024px) {
             .container {
                 grid-template-columns: 1fr;
@@ -544,15 +573,16 @@
             <div class="modal-title">
                 <i class="fas fa-spinner fa-spin"></i> Loading Game
             </div>
-            <div class="modal-message">Initializing Geoguessr...</div>
+            <div class="modal-message">Initializing Geoguessr with Mapillary...</div>
         </div>
     </div>
 
     <script>
         // ============= CONFIGURATION =============
         const MAPILLARY_API_KEY = 'MLY|24552405487769013|062ba57be0c669551266d0fd7df0e0bb';
+        
         const GAME_CONFIG = {
-            roundDuration: 60,
+            roundDuration: 120,
             totalRounds: 5,
             maxDistance: 5000, // km
             maxPoints: 5000,
@@ -562,7 +592,7 @@
         // ============= STATE =============
         let gameState = {
             gameId: null,
-            mode: 'single', // 'single' or 'multiplayer'
+            mode: 'single',
             difficulty: 'medium',
             players: {},
             currentRound: 1,
@@ -580,6 +610,7 @@
         let distanceCircle = null;
         let zoomLevel = 1;
         let ws = null;
+        let playersReady = {};
 
         // ============= INITIALIZATION =============
         function initGame() {
@@ -599,101 +630,19 @@
         }
 
         function initMap() {
-            map = new google.maps.Map(document.getElementById('guessMap'), {
-                center: { lat: 20, lng: 0 },
+            map = L.map('guessMap', {
+                center: [20, 0],
                 zoom: 2,
-                styles: [
-                    {
-                        elementType: 'geometry',
-                        stylers: [{ color: '#242f3e' }]
-                    },
-                    {
-                        elementType: 'labels.text.stroke',
-                        stylers: [{ color: '#242f3e' }]
-                    },
-                    {
-                        elementType: 'labels.text.fill',
-                        stylers: [{ color: '#746855' }]
-                    },
-                    {
-                        featureType: 'administrative.locality',
-                        elementType: 'labels.text.fill',
-                        stylers: [{ color: '#d59563' }]
-                    },
-                    {
-                        featureType: 'poi',
-                        elementType: 'labels.text.fill',
-                        stylers: [{ color: '#d59563' }]
-                    },
-                    {
-                        featureType: 'poi.park',
-                        elementType: 'geometry',
-                        stylers: [{ color: '#263c3f' }]
-                    },
-                    {
-                        featureType: 'poi.park',
-                        elementType: 'labels.text.fill',
-                        stylers: [{ color: '#6f9ba5' }]
-                    },
-                    {
-                        featureType: 'road',
-                        elementType: 'geometry',
-                        stylers: [{ color: '#38414e' }]
-                    },
-                    {
-                        featureType: 'road',
-                        elementType: 'geometry.stroke',
-                        stylers: [{ color: '#212a37' }]
-                    },
-                    {
-                        featureType: 'road',
-                        elementType: 'labels.text.fill',
-                        stylers: [{ color: '#9ca5b3' }]
-                    },
-                    {
-                        featureType: 'road.highway',
-                        elementType: 'geometry',
-                        stylers: [{ color: '#746855' }]
-                    },
-                    {
-                        featureType: 'road.highway',
-                        elementType: 'geometry.stroke',
-                        stylers: [{ color: '#1f2835' }]
-                    },
-                    {
-                        featureType: 'road.highway',
-                        elementType: 'labels.text.fill',
-                        stylers: [{ color: '#f3751ff' }]
-                    },
-                    {
-                        featureType: 'transit',
-                        elementType: 'geometry',
-                        stylers: [{ color: '#2f3948' }]
-                    },
-                    {
-                        featureType: 'transit.station',
-                        elementType: 'labels.text.fill',
-                        stylers: [{ color: '#d59563' }]
-                    },
-                    {
-                        featureType: 'water',
-                        elementType: 'geometry',
-                        stylers: [{ color: '#17263c' }]
-                    },
-                    {
-                        featureType: 'water',
-                        elementType: 'labels.text.fill',
-                        stylers: [{ color: '#515c6d' }]
-                    },
-                    {
-                        featureType: 'water',
-                        elementType: 'labels.text.stroke',
-                        stylers: [{ color: '#17263c' }]
-                    }
-                ]
+                attributionControl: false,
+                maxBounds: [[-90, -180], [90, 180]],
+                maxBoundsViscosity: 1.0
             });
 
-            map.addListener('click', handleMapClick);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                maxZoom: 19
+            }).addTo(map);
+
+            map.on('click', handleMapClick);
         }
 
         function connectWebSocket() {
@@ -722,6 +671,15 @@
             if (data.type === 'geoguessr_player_guess') {
                 const playerGuess = data.guess;
                 updatePlayerGuess(data.player, playerGuess);
+            } else if (data.type === 'geoguessr_player_ready') {
+                playersReady[data.player] = true;
+                const totalPlayers = Object.keys(gameState.players).length;
+                const readyPlayers = Object.keys(playersReady).length;
+
+                // Check if all players are ready
+                if (readyPlayers === totalPlayers) {
+                    submitGuess();
+                }
             } else if (data.type === 'geoguessr_round_complete') {
                 completeRound(data.scores);
             } else if (data.type === 'geoguessr_game_over') {
@@ -730,13 +688,16 @@
         }
 
         // ============= STREET VIEW =============
-        function loadRandomStreetView() {
-            // Get random coordinates based on difficulty
+        async function loadRandomStreetView() {
             const location = getRandomLocation(gameState.difficulty);
             gameState.currentLocation = location;
 
-            // For now, use a placeholder image. In production, this would fetch from Mapillary API
-            fetchMapillaryImage(location);
+            try {
+                await fetchMapillaryImage(location);
+            } catch (error) {
+                console.error('Failed to load Mapillary image:', error);
+                loadFallbackImage(location);
+            }
         }
 
         function getRandomLocation(difficulty) {
@@ -752,9 +713,9 @@
                 ];
             } else if (difficulty === 'medium') {
                 locations = [
-                    { lat: Math.random() * 60 - 30, lng: Math.random() * 120 - 60, name: 'Random City' },
-                    { lat: Math.random() * 60 - 30, lng: Math.random() * 120 - 60, name: 'Random City' },
-                    { lat: Math.random() * 60 - 30, lng: Math.random() * 120 - 60, name: 'Random City' }
+                    { lat: Math.random() * 60 - 30, lng: Math.random() * 120 - 60, name: 'Random Location' },
+                    { lat: Math.random() * 60 - 30, lng: Math.random() * 120 - 60, name: 'Random Location' },
+                    { lat: Math.random() * 60 - 30, lng: Math.random() * 120 - 60, name: 'Random Location' }
                 ];
             } else {
                 locations = [
@@ -767,21 +728,68 @@
             return locations[Math.floor(Math.random() * locations.length)];
         }
 
-        function fetchMapillaryImage(location) {
-            // Placeholder implementation - in production, query Mapillary API
-            const placeholderUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${location.lat},${location.lng}&zoom=15&size=800x600&key=AIzaSyDummyKey&style=feature:all|element:labels|visibility:off`;
+        async function fetchMapillaryImage(location) {
+            try {
+                // Query Mapillary API for images near the location
+                const bbox = `${location.lng - 0.05},${location.lat - 0.05},${location.lng + 0.05},${location.lat + 0.05}`;
+                const searchUrl = `https://graph.mapillary.com/images?fields=id,thumb_256_url&bbox=${bbox}&access_token=${MAPILLARY_API_KEY}`;
 
-            // For demo, use a simple street view image URL
-            const img = new Image();
-            img.src = `https://maps.googleapis.com/maps/api/streetview?size=800x600&location=${location.lat},${location.lng}&pitch=0&key=AIzaSyDummyKey`;
-            img.onload = () => {
-                document.getElementById('streetViewImage').src = img.src;
-                document.getElementById('imageDetails').textContent = `Location: ${location.name}`;
-            };
-            img.onerror = () => {
-                // Use a placeholder if the image fails to load
-                document.getElementById('streetViewImage').src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="600"%3E%3Crect fill="%231e293b" width="800" height="600"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23cbd5e1" font-size="24"%3EStreet View Image%3C/text%3E%3C/svg%3E';
-            };
+                const response = await fetch(searchUrl);
+                const data = await response.json();
+
+                if (data.data && data.data.length > 0) {
+                    const image = data.data[0];
+                    if (image.thumb_256_url) {
+                        document.getElementById('streetViewImage').src = image.thumb_256_url;
+                        document.getElementById('imageDetails').textContent = `Location: ${location.name} (Mapillary)`;
+                        return;
+                    }
+                }
+
+                // Fallback if no Mapillary coverage
+                loadFallbackImage(location);
+            } catch (error) {
+                console.error('Error fetching Mapillary image:', error);
+                loadFallbackImage(location);
+            }
+        }
+
+        function loadFallbackImage(location) {
+            // Create a canvas-based placeholder with location info (16:9 aspect ratio)
+            const canvas = document.createElement('canvas');
+            canvas.width = 960;
+            canvas.height = 540;
+            const ctx = canvas.getContext('2d');
+
+            // Dark background
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Location name
+            ctx.fillStyle = '#cbd5e1';
+            ctx.font = 'bold 28px Inter, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(location.name, 480, 150);
+
+            // Coordinates
+            ctx.font = '16px Inter, sans-serif';
+            ctx.fillStyle = '#94a3b8';
+            ctx.fillText(`Latitude: ${location.lat.toFixed(4)}°`, 480, 210);
+            ctx.fillText(`Longitude: ${location.lng.toFixed(4)}°`, 480, 240);
+
+            // Info text
+            ctx.font = 'italic 14px Inter, sans-serif';
+            ctx.fillStyle = '#64748b';
+            ctx.fillText('Mapillary coverage unavailable in this area', 480, 300);
+            ctx.fillText('Click on the map to guess this location', 480, 325);
+
+            // Pin icon
+            ctx.fillStyle = '#60a5fa';
+            ctx.font = 'bold 60px Arial';
+            ctx.fillText('📍', 480, 420);
+
+            document.getElementById('streetViewImage').src = canvas.toDataURL();
+            document.getElementById('imageDetails').textContent = `Location: ${location.name}`;
         }
 
         // ============= ZOOM CONTROLS =============
@@ -816,28 +824,35 @@
             }
         });
 
+        // Enter key to submit guess
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && gameState.roundActive && guessMarker) {
+                handlePlayerReady();
+            }
+        });
+
         // ============= MAP INTERACTION =============
         function handleMapClick(event) {
             if (!gameState.roundActive) return;
 
-            const lat = event.latLng.lat();
-            const lng = event.latLng.lng();
+            const lat = event.latlng.lat;
+            const lng = event.latlng.lng;
             gameState.guessLocation = { lat, lng };
 
             // Remove previous marker
-            if (guessMarker) guessMarker.setMap(null);
+            if (guessMarker) map.removeLayer(guessMarker);
 
-            // Add guess marker
-            guessMarker = new google.maps.Marker({
-                position: { lat, lng },
-                map: map,
-                title: 'Your Guess',
-                icon: 'http://maps.google.com/mapfiles/ms/icons/yellow-dot.png'
-            });
+            guessMarker = L.circleMarker([lat, lng], {
+                radius: 8,
+                fillColor: '#fbbf24',
+                color: '#f59e0b',
+                weight: 2,
+                opacity: 1,
+                fillOpacity: 0.8
+            }).addTo(map);
 
             // Center map on guess
-            map.setCenter({ lat, lng });
-            map.setZoom(6);
+            map.setView([lat, lng], 6);
         }
 
         // ============= TIMER =============
@@ -848,19 +863,19 @@
             gameState.roundStartTime = Date.now();
             gameState.roundTimeRemaining = GAME_CONFIG.roundDuration;
             gameState.guessLocation = null;
+            playersReady = {}; // Reset ready status for new round
 
             // Clear previous markers
-            if (guessMarker) guessMarker.setMap(null);
-            if (actualMarker) actualMarker.setMap(null);
-            if (distanceCircle) distanceCircle.setMap(null);
+            if (guessMarker) map.removeLayer(guessMarker);
+            if (actualMarker) map.removeLayer(actualMarker);
+            if (distanceCircle) map.removeLayer(distanceCircle);
 
             // Hide results
             document.getElementById('roundResults').classList.remove('show');
             document.getElementById('mapInstructions').classList.remove('hidden');
 
             // Reset map
-            map.setCenter({ lat: 20, lng: 0 });
-            map.setZoom(2);
+            map.setView([20, 0], 2);
 
             // Start timer
             if (timerInterval) clearInterval(timerInterval);
@@ -895,6 +910,34 @@
             }
         }
 
+        // ============= PLAYER READY HANDLING =============
+        function handlePlayerReady() {
+            if (!gameState.roundActive || !gameState.guessLocation) {
+                return; // Can't submit if no guess has been made
+            }
+
+            const username = 'Player1';
+            playersReady[username] = true;
+
+            // Check if all players are ready
+            const totalPlayers = Object.keys(gameState.players).length || 1;
+            const readyPlayers = Object.keys(playersReady).length;
+
+            if (gameState.mode === 'single' || readyPlayers === totalPlayers) {
+                // All players ready or single player, submit guess
+                submitGuess();
+            } else {
+                // Multiplayer - notify server that player is ready
+                if (ws && ws.readyState === 1) {
+                    ws.send(JSON.stringify({
+                        type: 'geoguessr_player_ready',
+                        gameId: gameState.gameId,
+                        player: username
+                    }));
+                }
+            }
+        }
+
         // ============= GUESS SUBMISSION =============
         function submitGuess() {
             if (!gameState.roundActive) return;
@@ -908,7 +951,7 @@
             const points = calculatePoints(distance);
 
             // Update player score
-            const username = 'Player1'; // Would come from server
+            const username = 'Player1';
             if (!gameState.players[username]) {
                 gameState.players[username] = 0;
             }
@@ -918,26 +961,26 @@
             displayRoundResults(distance, points);
 
             // Show actual location
-            if (actualMarker) actualMarker.setMap(null);
-            actualMarker = new google.maps.Marker({
-                position: gameState.currentLocation,
-                map: map,
-                title: 'Actual Location',
-                icon: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png'
-            });
+            if (actualMarker) map.removeLayer(actualMarker);
+            actualMarker = L.circleMarker([gameState.currentLocation.lat, gameState.currentLocation.lng], {
+                radius: 8,
+                fillColor: '#ef4444',
+                color: '#dc2626',
+                weight: 2,
+                opacity: 1,
+                fillOpacity: 0.8
+            }).addTo(map);
 
             // Draw distance circle
-            if (distanceCircle) distanceCircle.setMap(null);
-            distanceCircle = new google.maps.Circle({
-                center: gameState.currentLocation,
+            if (distanceCircle) map.removeLayer(distanceCircle);
+            distanceCircle = L.circle([gameState.currentLocation.lat, gameState.currentLocation.lng], {
                 radius: distance * 1000, // convert km to meters
-                map: map,
+                color: '#3b82f6',
+                weight: 2,
+                opacity: 0.8,
                 fillColor: '#3b82f6',
-                fillOpacity: 0.1,
-                strokeColor: '#3b82f6',
-                strokeOpacity: 0.8,
-                strokeWeight: 2
-            });
+                fillOpacity: 0.1
+            }).addTo(map);
 
             // Send to server if multiplayer
             if (gameState.mode === 'multiplayer' && ws && ws.readyState === 1) {
@@ -988,6 +1031,7 @@
             return Math.round(GAME_CONFIG.maxPoints * (1 - distance / GAME_CONFIG.maxDistance));
         }
 
+
         // ============= DISPLAY UPDATES =============
         function updateScoresDisplay() {
             const scoresList = document.getElementById('scoresList');
@@ -1006,19 +1050,20 @@
                 scoresList.appendChild(item);
             });
 
-            // Update your score
             const yourScore = gameState.players['Player1'] || 0;
             document.getElementById('your-score').textContent = yourScore;
         }
 
         function updatePlayerGuess(player, guess) {
-            // Handle multiplayer player guesses visualization
-            if (guessMarker) guessMarker.setMap(null);
-            guessMarker = new google.maps.Marker({
-                position: guess,
-                map: map,
-                title: `${player}'s Guess`
-            });
+            if (guessMarker) map.removeLayer(guessMarker);
+            guessMarker = L.circleMarker([guess.lat, guess.lng], {
+                radius: 8,
+                fillColor: '#fbbf24',
+                color: '#f59e0b',
+                weight: 2,
+                opacity: 1,
+                fillOpacity: 0.8
+            }).addTo(map);
         }
 
         function completeRound(scores) {
@@ -1030,7 +1075,6 @@
             gameState.gameActive = false;
             clearInterval(timerInterval);
 
-            // Show game over modal
             const scoresHtml = Object.entries(finalScores)
                 .sort((a, b) => b[1] - a[1])
                 .map(([player, score]) => `<div style="margin-bottom: 0.5rem;"><strong>${player}</strong>: ${score}</div>`)
