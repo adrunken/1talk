@@ -2295,6 +2295,51 @@ html[data-theme="dark"] .numberle-key:hover:not(:disabled) {
   </div>
 </div>
 
+<!-- Geoguessr Setup Modal -->
+<div id="geoguessr-setup-overlay" class="chess-setup-overlay">
+  <div class="chess-setup-modal">
+    <h2 class="chess-setup-title">Create Geoguessr Game</h2>
+
+    <div class="setup-section">
+      <div class="setup-section-label">Game Mode</div>
+      <div class="setup-options">
+        <button class="geoguessr-setup-option-btn" data-mode="single" title="Single-player game">
+          <i class="fas fa-user"></i> Single-Player
+        </button>
+        <button class="geoguessr-setup-option-btn" data-mode="multiplayer" title="Multiplayer game">
+          <i class="fas fa-users"></i> Multiplayer
+        </button>
+      </div>
+    </div>
+
+    <div class="setup-section">
+      <div class="setup-section-label">Difficulty</div>
+      <div class="setup-options">
+        <button class="geoguessr-setup-option-btn" data-difficulty="easy" title="Easy - World locations">
+          <i class="fas fa-leaf"></i> Easy
+        </button>
+        <button class="geoguessr-setup-option-btn" data-difficulty="medium" title="Medium - Major cities">
+          <i class="fas fa-mountain"></i> Medium
+        </button>
+        <button class="geoguessr-setup-option-btn" data-difficulty="hard" title="Hard - Random locations">
+          <i class="fas fa-fire"></i> Hard
+        </button>
+      </div>
+    </div>
+
+    <div class="setup-section" id="geoguessr-players-section" style="display: none;">
+      <div class="setup-section-label">Invite Players <span id="geoguessr-player-count" style="color: var(--text-secondary); font-weight: 400; font-size: 0.8rem;">(select up to 3)</span></div>
+      <div class="users-list" id="geoguessr-users-list"></div>
+      <div class="setup-validation-msg" id="geoguessr-validation-msg"></div>
+    </div>
+
+    <div class="setup-actions">
+      <button class="setup-action-btn" id="geoguessr-cancel-btn">Cancel</button>
+      <button class="setup-action-btn primary" id="geoguessr-create-btn" disabled>Start Game</button>
+    </div>
+  </div>
+</div>
+
 <!-- Chess Game Setup Modal -->
 <div id="chess-setup-overlay" class="chess-setup-overlay">
   <div class="chess-setup-modal">
