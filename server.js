@@ -1260,6 +1260,8 @@ const fourPlayerSessions = new Map(); // sessionId -> {initiator, players: [play
 const fourPlayerGames = new Map(); // game_id -> {players: [p0, p1, p2, p3], board: [...], currentTurn: 0, activePlayers: [0,1,2,3], moveCount: 0, playerWs: Map<playerName -> ws>}
 const snakeGames = new Map(); // game_id -> {players: [username, ...], gameState: {...}, playerWs: Map}
 let snakeLobby = { playerInfo: new Map(), gameId: null, gameLoop: null, countdownSeconds: 0, countdownInterval: null }; // Current snake game lobby
+const geoguessrInvites = new Map(); // sessionKey -> {inviter, players: Set, acceptedPlayers: Set, difficulty, createdAt}
+const geoguessrGames = new Map(); // game_id -> {players: [username, ...], difficulty, round: 1, playerScores: {}, playerWs: Map, gameState}
 let nextGameId = 1;
 let nextSessionId = 1;
 
