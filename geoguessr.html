@@ -863,6 +863,7 @@
             gameState.roundStartTime = Date.now();
             gameState.roundTimeRemaining = GAME_CONFIG.roundDuration;
             gameState.guessLocation = null;
+            playersReady = {}; // Reset ready status for new round
 
             // Clear previous markers
             if (guessMarker) map.removeLayer(guessMarker);
