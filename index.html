@@ -4907,26 +4907,17 @@ function ready() {
 
     function generateNumberleEquation() {
         // Generate random equations that are 8 characters long
-        const num1 = Math.floor(Math.random() * 90) + 10; // 10-99
-        const num2 = Math.floor(Math.random() * 90) + 10; // 10-99
-        const operators = ['+', '-', '*', '/'];
-        const operator = operators[Math.floor(Math.random() * operators.length)];
+        const predefinedEquations = [
+            '10+10=20', '30-10=20', '50-25=25', '40-12=28', '35-15=20',
+            '27-12=15', '33-11=22', '44-22=22', '55-33=22', '99-88=11',
+            '77-66=11', '88-55=33', '99-66=33', '96-48=48', '84-42=42',
+            '25+25=50', '10+20=30', '15+15=30', '12+18=30', '20+15=35',
+            '13+13=26', '14+14=28', '16+16=32', '18+18=36', '19+19=38',
+            '11+11=22', '21+21=42', '23+23=46', '24+24=48', '26+26=52',
+            '50-20=30', '60-30=30', '70-40=30', '80-50=30', '90-60=30'
+        ];
 
-        let result;
-        try {
-            result = Math.floor(eval(num1 + operator + num2));
-        } catch (e) {
-            result = 0;
-        }
-
-        if (result < 0) result = Math.abs(result);
-
-        const equation = `${num1}${operator}${num2}=${result}`;
-        if (equation.length === 8) {
-            return equation;
-        }
-        // Recursively try again if not 8 characters
-        return generateNumberleEquation();
+        return predefinedEquations[Math.floor(Math.random() * predefinedEquations.length)];
     }
 
     let numberleState = {
