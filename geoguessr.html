@@ -900,6 +900,34 @@
             }
         }
 
+        // ============= PLAYER READY HANDLING =============
+        function handlePlayerReady() {
+            if (!gameState.roundActive || !gameState.guessLocation) {
+                return; // Can't submit if no guess has been made
+            }
+
+            const username = 'Player1';
+            playersReady[username] = true;
+
+            // Check if all players are ready
+            const totalPlayers = Object.keys(gameState.players).length || 1;
+            const readyPlayers = Object.keys(playersReady).length;
+
+            if (gameState.mode === 'single' || readyPlayers === totalPlayers) {
+                // All players ready or single player, submit guess
+                submitGuess();
+            } else {
+                // Multiplayer - notify server that player is ready
+                if (ws && ws.readyState === 1) {
+                    ws.send(JSON.stringify({
+                        type: 'geoguessr_player_ready',
+                        gameId: gameState.gameId,
+                        player: username
+                    }));
+                }
+            }
+        }
+
         // ============= GUESS SUBMISSION =============
         function submitGuess() {
             if (!gameState.roundActive) return;
