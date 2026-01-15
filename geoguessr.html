@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geoguessr - Location Guessing Game</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDummyKey"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            height: 100%;
+        }
+
+        body {
+            background: #0f172a;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: #f1f5f9;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            width: 100%;
+            height: 100%;
+            gap: 1rem;
+            padding: 1rem;
+        }
+
+        .game-area {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            overflow: hidden;
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #1e293b;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #334155;
+        }
+
+        .game-info {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .info-item {
+            text-align: left;
+        }
+
+        .info-label {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.25rem;
+        }
+
+        .info-value {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #f1f5f9;
+        }
+
+        .timer {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #60a5fa;
+            min-width: 80px;
+            text-align: right;
+        }
+
+        .timer.warning {
+            color: #fbbf24;
+        }
+
+        .timer.danger {
+            color: #ef4444;
+        }
+
+        .street-view-container {
+            position: relative;
+            flex: 1;
+            background: #1e293b;
+            border-radius: 0.5rem;
+            border: 1px solid #334155;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .street-view-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            cursor: zoom-in;
+        }
+
+        .street-view-image.zoomed {
+            cursor: zoom-out;
+        }
+
+        .zoom-controls {
+            position: absolute;
+            bottom: 1rem;
+            left: 1rem;
+            display: flex;
+            gap: 0.5rem;
+            z-index: 10;
+        }
+
+        .zoom-btn {
+            background: #1e293b;
+            border: 1px solid #475569;
+            color: #f1f5f9;
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .zoom-btn:hover {
+            background: #334155;
+            border-color: #64748b;
+        }
+
+        .image-info {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: rgba(30, 41, 59, 0.9);
+            padding: 0.75rem 1rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            color: #cbd5e1;
+            z-index: 10;
+            max-width: 300px;
+        }
+
+        .map-area {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .map-container {
+            flex: 1;
+            background: #1e293b;
+            border-radius: 0.5rem;
+            border: 1px solid #334155;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #guessMap {
+            width: 100%;
+            height: 100%;
+        }
+
+        .map-instructions {
+            background: #1e293b;
+            padding: 1rem;
+            border-radius: 0.375rem;
+            border: 1px solid #334155;
+            font-size: 0.875rem;
+            color: #cbd5e1;
+            text-align: center;
+        }
+
+        .map-instructions.hidden {
+            display: none;
+        }
+
+        .guess-controls {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .guess-btn {
+            flex: 1;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.375rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .guess-btn.submit {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .guess-btn.submit:hover:not(:disabled) {
+            background: #2563eb;
+        }
+
+        .guess-btn.submit:disabled {
+            background: #64748b;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .guess-btn.skip {
+            background: #475569;
+            color: #f1f5f9;
+        }
+
+        .guess-btn.skip:hover {
+            background: #64748b;
+        }
+
+        .scores-panel {
+            background: #1e293b;
+            padding: 1rem;
+            border-radius: 0.375rem;
+            border: 1px solid #334155;
+            overflow-y: auto;
+            max-height: 300px;
+        }
+
+        .scores-title {
+            font-size: 0.875rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+        }
+
+        .score-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            background: #0f172a;
+            border-radius: 0.375rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .score-item .player-name {
+            font-weight: 600;
+            color: #f1f5f9;
+        }
+
+        .score-item .player-score {
+            color: #60a5fa;
+            font-weight: 700;
+        }
+
+        .round-results {
+            background: #1e293b;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            border: 1px solid #334155;
+            text-align: center;
+            display: none;
+        }
+
+        .round-results.show {
+            display: block;
+        }
+
+        .result-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #f1f5f9;
+        }
+
+        .result-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .result-detail {
+            background: #0f172a;
+            padding: 1rem;
+            border-radius: 0.375rem;
+        }
+
+        .result-label {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #60a5fa;
+        }
+
+        .next-round-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.375rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .next-round-btn:hover {
+            background: #2563eb;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            visibility: hidden;
+            opacity: 0;
+            transition: all 0.3s;
+        }
+
+        .modal-overlay.show {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .modal {
+            background: #1e293b;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            border: 1px solid #334155;
+            max-width: 500px;
+            text-align: center;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #f1f5f9;
+        }
+
+        .modal-message {
+            color: #cbd5e1;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .modal-btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.375rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .modal-btn.primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .modal-btn.primary:hover {
+            background: #2563eb;
+        }
+
+        .modal-btn.secondary {
+            background: #475569;
+            color: #f1f5f9;
+        }
+
+        .modal-btn.secondary:hover {
+            background: #64748b;
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .game-area {
+                min-height: 50%;
+            }
+
+            .map-area {
+                min-height: 50%;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                padding: 0.5rem;
+                gap: 0.5rem;
+            }
+
+            .game-header {
+                padding: 0.75rem;
+            }
+
+            .game-info {
+                gap: 1rem;
+            }
+
+            .timer {
+                font-size: 1.5rem;
+                min-width: 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Left: Street View and Controls -->
+        <div class="game-area">
+            <div class="game-header">
+                <div class="game-info">
+                    <div class="info-item">
+                        <div class="info-label">Round</div>
+                        <div class="info-value"><span id="current-round">1</span> / <span id="total-rounds">5</span></div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Your Score</div>
+                        <div class="info-value" id="your-score">0</div>
+                    </div>
+                </div>
+                <div class="timer" id="game-timer">60</div>
+            </div>
+
+            <div class="street-view-container">
+                <img id="streetViewImage" class="street-view-image" src="" alt="Street View">
+                <div class="image-info" id="imageInfo" style="display: none;">
+                    <i class="fas fa-info-circle"></i> <span id="imageDetails">Loading...</span>
+                </div>
+                <div class="zoom-controls">
+                    <button class="zoom-btn" id="zoomInBtn" title="Zoom in">
+                        <i class="fas fa-search-plus"></i>
+                    </button>
+                    <button class="zoom-btn" id="zoomOutBtn" title="Zoom out">
+                        <i class="fas fa-search-minus"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="map-instructions" id="mapInstructions">
+                👈 Click on the map to the right to make your guess. The closer you are, the higher your score!
+            </div>
+        </div>
+
+        <!-- Right: Map and Scores -->
+        <div class="map-area">
+            <div class="map-container">
+                <div id="guessMap"></div>
+            </div>
+
+            <div class="round-results" id="roundResults">
+                <div class="result-title">Round Complete!</div>
+                <div class="result-details">
+                    <div class="result-detail">
+                        <div class="result-label">Distance</div>
+                        <div class="result-value" id="resultDistance">0 km</div>
+                    </div>
+                    <div class="result-detail">
+                        <div class="result-label">Points Earned</div>
+                        <div class="result-value" id="resultPoints">0</div>
+                    </div>
+                </div>
+                <button class="next-round-btn" id="nextRoundBtn">Next Round</button>
+            </div>
+
+            <div class="scores-panel">
+                <div class="scores-title">Leaderboard</div>
+                <div id="scoresList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div class="modal-overlay" id="gameOverModal">
+        <div class="modal">
+            <div class="modal-title">Game Over!</div>
+            <div class="modal-message">
+                <div style="margin-bottom: 1rem;">Final Scores</div>
+                <div id="finalScores" style="text-align: left;"></div>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn primary" id="playAgainBtn">Play Again</button>
+                <button class="modal-btn secondary" id="closeGameBtn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Modal -->
+    <div class="modal-overlay show" id="loadingModal">
+        <div class="modal">
+            <div class="modal-title">
+                <i class="fas fa-spinner fa-spin"></i> Loading Game
+            </div>
+            <div class="modal-message">Initializing Geoguessr...</div>
+        </div>
+    </div>
+
+    <script>
+        // ============= CONFIGURATION =============
+        const MAPILLARY_API_KEY = 'MLY|24552405487769013|062ba57be0c669551266d0fd7df0e0bb';
+        const GAME_CONFIG = {
+            roundDuration: 60,
+            totalRounds: 5,
+            maxDistance: 5000, // km
+            maxPoints: 5000,
+            minPoints: 0
+        };
+
+        // ============= STATE =============
+        let gameState = {
+            gameId: null,
+            mode: 'single', // 'single' or 'multiplayer'
+            difficulty: 'medium',
+            players: {},
+            currentRound: 1,
+            currentLocation: null,
+            guessLocation: null,
+            roundStartTime: null,
+            roundTimeRemaining: GAME_CONFIG.roundDuration,
+            gameActive: false,
+            roundActive: false
+        };
+
+        let map = null;
+        let guessMarker = null;
+        let actualMarker = null;
+        let distanceCircle = null;
+        let zoomLevel = 1;
+        let ws = null;
+
+        // ============= INITIALIZATION =============
+        function initGame() {
+            const params = new URLSearchParams(window.location.search);
+            gameState.gameId = params.get('gameId');
+            gameState.mode = params.get('mode') || 'single';
+            gameState.difficulty = params.get('difficulty') || 'medium';
+
+            initMap();
+            loadRandomStreetView();
+            startRound();
+            document.getElementById('loadingModal').classList.remove('show');
+
+            if (gameState.mode === 'multiplayer') {
+                connectWebSocket();
+            }
+        }
+
+        function initMap() {
+            map = new google.maps.Map(document.getElementById('guessMap'), {
+                center: { lat: 20, lng: 0 },
+                zoom: 2,
+                styles: [
+                    {
+                        elementType: 'geometry',
+                        stylers: [{ color: '#242f3e' }]
+                    },
+                    {
+                        elementType: 'labels.text.stroke',
+                        stylers: [{ color: '#242f3e' }]
+                    },
+                    {
+                        elementType: 'labels.text.fill',
+                        stylers: [{ color: '#746855' }]
+                    },
+                    {
+                        featureType: 'administrative.locality',
+                        elementType: 'labels.text.fill',
+                        stylers: [{ color: '#d59563' }]
+                    },
+                    {
+                        featureType: 'poi',
+                        elementType: 'labels.text.fill',
+                        stylers: [{ color: '#d59563' }]
+                    },
+                    {
+                        featureType: 'poi.park',
+                        elementType: 'geometry',
+                        stylers: [{ color: '#263c3f' }]
+                    },
+                    {
+                        featureType: 'poi.park',
+                        elementType: 'labels.text.fill',
+                        stylers: [{ color: '#6f9ba5' }]
+                    },
+                    {
+                        featureType: 'road',
+                        elementType: 'geometry',
+                        stylers: [{ color: '#38414e' }]
+                    },
+                    {
+                        featureType: 'road',
+                        elementType: 'geometry.stroke',
+                        stylers: [{ color: '#212a37' }]
+                    },
+                    {
+                        featureType: 'road',
+                        elementType: 'labels.text.fill',
+                        stylers: [{ color: '#9ca5b3' }]
+                    },
+                    {
+                        featureType: 'road.highway',
+                        elementType: 'geometry',
+                        stylers: [{ color: '#746855' }]
+                    },
+                    {
+                        featureType: 'road.highway',
+                        elementType: 'geometry.stroke',
+                        stylers: [{ color: '#1f2835' }]
+                    },
+                    {
+                        featureType: 'road.highway',
+                        elementType: 'labels.text.fill',
+                        stylers: [{ color: '#f3751ff' }]
+                    },
+                    {
+                        featureType: 'transit',
+                        elementType: 'geometry',
+                        stylers: [{ color: '#2f3948' }]
+                    },
+                    {
+                        featureType: 'transit.station',
+                        elementType: 'labels.text.fill',
+                        stylers: [{ color: '#d59563' }]
+                    },
+                    {
+                        featureType: 'water',
+                        elementType: 'geometry',
+                        stylers: [{ color: '#17263c' }]
+                    },
+                    {
+                        featureType: 'water',
+                        elementType: 'labels.text.fill',
+                        stylers: [{ color: '#515c6d' }]
+                    },
+                    {
+                        featureType: 'water',
+                        elementType: 'labels.text.stroke',
+                        stylers: [{ color: '#17263c' }]
+                    }
+                ]
+            });
+
+            map.addListener('click', handleMapClick);
+        }
+
+        function connectWebSocket() {
+            const wsScheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
+            ws = new WebSocket(wsScheme + '://' + window.location.host + '/ws');
+
+            ws.onopen = () => {
+                console.log('[geoguessr] Connected to server');
+            };
+
+            ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    handleWebSocketMessage(data);
+                } catch (e) {
+                    console.error('[geoguessr] Failed to parse message:', e);
+                }
+            };
+
+            ws.onerror = (error) => {
+                console.error('[geoguessr] WebSocket error:', error);
+            };
+        }
+
+        function handleWebSocketMessage(data) {
+            if (data.type === 'geoguessr_player_guess') {
+                const playerGuess = data.guess;
+                updatePlayerGuess(data.player, playerGuess);
+            } else if (data.type === 'geoguessr_round_complete') {
+                completeRound(data.scores);
+            } else if (data.type === 'geoguessr_game_over') {
+                endGame(data.finalScores);
+            }
+        }
+
+        // ============= STREET VIEW =============
+        function loadRandomStreetView() {
+            // Get random coordinates based on difficulty
+            const location = getRandomLocation(gameState.difficulty);
+            gameState.currentLocation = location;
+
+            // For now, use a placeholder image. In production, this would fetch from Mapillary API
+            fetchMapillaryImage(location);
+        }
+
+        function getRandomLocation(difficulty) {
+            let locations = [];
+
+            if (difficulty === 'easy') {
+                locations = [
+                    { lat: 40.7128, lng: -74.0060, name: 'New York' },
+                    { lat: 51.5074, lng: -0.1278, name: 'London' },
+                    { lat: 48.8566, lng: 2.3522, name: 'Paris' },
+                    { lat: 52.5200, lng: 13.4050, name: 'Berlin' },
+                    { lat: 35.6762, lng: 139.6503, name: 'Tokyo' }
+                ];
+            } else if (difficulty === 'medium') {
+                locations = [
+                    { lat: Math.random() * 60 - 30, lng: Math.random() * 120 - 60, name: 'Random City' },
+                    { lat: Math.random() * 60 - 30, lng: Math.random() * 120 - 60, name: 'Random City' },
+                    { lat: Math.random() * 60 - 30, lng: Math.random() * 120 - 60, name: 'Random City' }
+                ];
+            } else {
+                locations = [
+                    { lat: Math.random() * 180 - 90, lng: Math.random() * 360 - 180, name: 'Random Location' },
+                    { lat: Math.random() * 180 - 90, lng: Math.random() * 360 - 180, name: 'Random Location' },
+                    { lat: Math.random() * 180 - 90, lng: Math.random() * 360 - 180, name: 'Random Location' }
+                ];
+            }
+
+            return locations[Math.floor(Math.random() * locations.length)];
+        }
+
+        function fetchMapillaryImage(location) {
+            // Placeholder implementation - in production, query Mapillary API
+            const placeholderUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${location.lat},${location.lng}&zoom=15&size=800x600&key=AIzaSyDummyKey&style=feature:all|element:labels|visibility:off`;
+
+            // For demo, use a simple street view image URL
+            const img = new Image();
+            img.src = `https://maps.googleapis.com/maps/api/streetview?size=800x600&location=${location.lat},${location.lng}&pitch=0&key=AIzaSyDummyKey`;
+            img.onload = () => {
+                document.getElementById('streetViewImage').src = img.src;
+                document.getElementById('imageDetails').textContent = `Location: ${location.name}`;
+            };
+            img.onerror = () => {
+                // Use a placeholder if the image fails to load
+                document.getElementById('streetViewImage').src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="600"%3E%3Crect fill="%231e293b" width="800" height="600"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23cbd5e1" font-size="24"%3EStreet View Image%3C/text%3E%3C/svg%3E';
+            };
+        }
+
+        // ============= ZOOM CONTROLS =============
+        document.getElementById('zoomInBtn').addEventListener('click', () => {
+            zoomLevel = Math.min(zoomLevel + 0.2, 3);
+            updateImageZoom();
+        });
+
+        document.getElementById('zoomOutBtn').addEventListener('click', () => {
+            zoomLevel = Math.max(zoomLevel - 0.2, 1);
+            updateImageZoom();
+        });
+
+        function updateImageZoom() {
+            const img = document.getElementById('streetViewImage');
+            if (zoomLevel > 1) {
+                img.style.transform = `scale(${zoomLevel})`;
+                img.classList.add('zoomed');
+            } else {
+                img.style.transform = 'scale(1)';
+                img.classList.remove('zoomed');
+            }
+        }
+
+        document.getElementById('streetViewImage').addEventListener('click', function(e) {
+            if (zoomLevel > 1) {
+                zoomLevel = 1;
+                updateImageZoom();
+            } else {
+                zoomLevel = 1.5;
+                updateImageZoom();
+            }
+        });
+
+        // ============= MAP INTERACTION =============
+        function handleMapClick(event) {
+            if (!gameState.roundActive) return;
+
+            const lat = event.latLng.lat();
+            const lng = event.latLng.lng();
+            gameState.guessLocation = { lat, lng };
+
+            // Remove previous marker
+            if (guessMarker) guessMarker.setMap(null);
+
+            // Add guess marker
+            guessMarker = new google.maps.Marker({
+                position: { lat, lng },
+                map: map,
+                title: 'Your Guess',
+                icon: 'http://maps.google.com/mapfiles/ms/icons/yellow-dot.png'
+            });
+
+            // Center map on guess
+            map.setCenter({ lat, lng });
+            map.setZoom(6);
+        }
+
+        // ============= TIMER =============
+        let timerInterval = null;
+
+        function startRound() {
+            gameState.roundActive = true;
+            gameState.roundStartTime = Date.now();
+            gameState.roundTimeRemaining = GAME_CONFIG.roundDuration;
+            gameState.guessLocation = null;
+
+            // Clear previous markers
+            if (guessMarker) guessMarker.setMap(null);
+            if (actualMarker) actualMarker.setMap(null);
+            if (distanceCircle) distanceCircle.setMap(null);
+
+            // Hide results
+            document.getElementById('roundResults').classList.remove('show');
+            document.getElementById('mapInstructions').classList.remove('hidden');
+
+            // Reset map
+            map.setCenter({ lat: 20, lng: 0 });
+            map.setZoom(2);
+
+            // Start timer
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(updateTimer, 100);
+
+            // Load new street view
+            loadRandomStreetView();
+
+            // Update display
+            document.getElementById('current-round').textContent = gameState.currentRound;
+            updateScoresDisplay();
+        }
+
+        function updateTimer() {
+            gameState.roundTimeRemaining = Math.max(0, GAME_CONFIG.roundDuration - ((Date.now() - gameState.roundStartTime) / 1000));
+
+            const timerEl = document.getElementById('game-timer');
+            timerEl.textContent = Math.ceil(gameState.roundTimeRemaining);
+
+            if (gameState.roundTimeRemaining > 20) {
+                timerEl.classList.remove('warning', 'danger');
+            } else if (gameState.roundTimeRemaining > 10) {
+                timerEl.classList.remove('danger');
+                timerEl.classList.add('warning');
+            } else {
+                timerEl.classList.add('danger');
+            }
+
+            if (gameState.roundTimeRemaining <= 0) {
+                clearInterval(timerInterval);
+                submitGuess();
+            }
+        }
+
+        // ============= GUESS SUBMISSION =============
+        function submitGuess() {
+            if (!gameState.roundActive) return;
+
+            gameState.roundActive = false;
+            clearInterval(timerInterval);
+            document.getElementById('mapInstructions').classList.add('hidden');
+
+            const guess = gameState.guessLocation || { lat: 20, lng: 0 };
+            const distance = calculateDistance(gameState.currentLocation, guess);
+            const points = calculatePoints(distance);
+
+            // Update player score
+            const username = 'Player1'; // Would come from server
+            if (!gameState.players[username]) {
+                gameState.players[username] = 0;
+            }
+            gameState.players[username] += points;
+
+            // Display results
+            displayRoundResults(distance, points);
+
+            // Show actual location
+            if (actualMarker) actualMarker.setMap(null);
+            actualMarker = new google.maps.Marker({
+                position: gameState.currentLocation,
+                map: map,
+                title: 'Actual Location',
+                icon: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png'
+            });
+
+            // Draw distance circle
+            if (distanceCircle) distanceCircle.setMap(null);
+            distanceCircle = new google.maps.Circle({
+                center: gameState.currentLocation,
+                radius: distance * 1000, // convert km to meters
+                map: map,
+                fillColor: '#3b82f6',
+                fillOpacity: 0.1,
+                strokeColor: '#3b82f6',
+                strokeOpacity: 0.8,
+                strokeWeight: 2
+            });
+
+            // Send to server if multiplayer
+            if (gameState.mode === 'multiplayer' && ws && ws.readyState === 1) {
+                ws.send(JSON.stringify({
+                    type: 'geoguessr_player_guess',
+                    gameId: gameState.gameId,
+                    guess: guess,
+                    distance: distance,
+                    points: points
+                }));
+            }
+
+            updateScoresDisplay();
+
+            // Wait for next round or end game
+            if (gameState.currentRound < GAME_CONFIG.totalRounds) {
+                document.getElementById('nextRoundBtn').style.display = 'block';
+                document.getElementById('nextRoundBtn').onclick = () => {
+                    gameState.currentRound++;
+                    startRound();
+                };
+            } else {
+                endGame(gameState.players);
+            }
+        }
+
+        function displayRoundResults(distance, points) {
+            document.getElementById('roundResults').classList.add('show');
+            document.getElementById('resultDistance').textContent = distance.toFixed(2) + ' km';
+            document.getElementById('resultPoints').textContent = points;
+        }
+
+        // ============= SCORING =============
+        function calculateDistance(loc1, loc2) {
+            const R = 6371; // Earth's radius in km
+            const dLat = (loc2.lat - loc1.lat) * Math.PI / 180;
+            const dLng = (loc2.lng - loc1.lng) * Math.PI / 180;
+            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(loc1.lat * Math.PI / 180) * Math.cos(loc2.lat * Math.PI / 180) *
+                Math.sin(dLng / 2) * Math.sin(dLng / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c;
+        }
+
+        function calculatePoints(distance) {
+            if (distance <= 0.02) return GAME_CONFIG.maxPoints; // 20 meters
+            if (distance >= GAME_CONFIG.maxDistance) return GAME_CONFIG.minPoints;
+            return Math.round(GAME_CONFIG.maxPoints * (1 - distance / GAME_CONFIG.maxDistance));
+        }
+
+        // ============= DISPLAY UPDATES =============
+        function updateScoresDisplay() {
+            const scoresList = document.getElementById('scoresList');
+            scoresList.innerHTML = '';
+
+            const sortedPlayers = Object.entries(gameState.players)
+                .sort((a, b) => b[1] - a[1]);
+
+            sortedPlayers.forEach(([player, score]) => {
+                const item = document.createElement('div');
+                item.className = 'score-item';
+                item.innerHTML = `
+                    <span class="player-name">${player}</span>
+                    <span class="player-score">${score}</span>
+                `;
+                scoresList.appendChild(item);
+            });
+
+            // Update your score
+            const yourScore = gameState.players['Player1'] || 0;
+            document.getElementById('your-score').textContent = yourScore;
+        }
+
+        function updatePlayerGuess(player, guess) {
+            // Handle multiplayer player guesses visualization
+            if (guessMarker) guessMarker.setMap(null);
+            guessMarker = new google.maps.Marker({
+                position: guess,
+                map: map,
+                title: `${player}'s Guess`
+            });
+        }
+
+        function completeRound(scores) {
+            gameState.players = scores;
+            updateScoresDisplay();
+        }
+
+        function endGame(finalScores) {
+            gameState.gameActive = false;
+            clearInterval(timerInterval);
+
+            // Show game over modal
+            const scoresHtml = Object.entries(finalScores)
+                .sort((a, b) => b[1] - a[1])
+                .map(([player, score]) => `<div style="margin-bottom: 0.5rem;"><strong>${player}</strong>: ${score}</div>`)
+                .join('');
+
+            document.getElementById('finalScores').innerHTML = scoresHtml;
+            document.getElementById('gameOverModal').classList.add('show');
+
+            document.getElementById('playAgainBtn').onclick = () => {
+                location.reload();
+            };
+
+            document.getElementById('closeGameBtn').onclick = () => {
+                window.close();
+            };
+        }
+
+        // ============= STARTUP =============
+        window.addEventListener('DOMContentLoaded', initGame);
+        window.addEventListener('beforeunload', () => {
+            if (ws) ws.close();
+        });
+    </script>
+</body>
+</html>
