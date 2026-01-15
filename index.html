@@ -2679,6 +2679,14 @@ var chessSetupState = {
     allUsers: [] // List of all available users (excluding current user)
 };
 
+// Geoguessr game setup state
+var geoguessr SetupState = {
+    mode: null, // 'single' or 'multiplayer'
+    difficulty: null, // 'easy', 'medium', 'hard'
+    selectedUsers: [], // Array of usernames to invite (for multiplayer)
+    allUsers: [] // List of all available users (excluding current user)
+};
+
 // Load boards and pieces data from local file
 function loadBoardPiecesData() {
     return fetch('board-pieces-data.json?t=' + Date.now())
