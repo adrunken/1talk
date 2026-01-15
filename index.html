@@ -1673,6 +1673,22 @@ html[data-theme="dark"] .numberle-key:hover:not(:disabled) {
 
 .setup-validation-msg.show { display: block; }
 
+/* Geoguessr Game Modal */
+.geoguessr-game-overlay { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(15, 23, 42, 0.5); z-index: 1002; }
+.geoguessr-game-overlay.show { display: flex; }
+
+.geoguessr-game-modal { background: var(--bg-secondary); border: 1px solid var(--border-light); border-radius: var(--radius-xl); box-shadow: var(--shadow-lg); width: 95%; height: 95vh; max-width: 1400px; display: flex; flex-direction: column; }
+
+.geoguessr-game-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-light); background: var(--bg-tertiary); }
+
+.geoguessr-game-title { font-size: 1.25rem; font-weight: 600; color: var(--text-primary); margin: 0; }
+
+.geoguessr-game-close { background: none; border: none; color: var(--text-primary); font-size: 1.5rem; cursor: pointer; padding: 0.5rem; border-radius: var(--radius-md); transition: all 0.2s ease; }
+
+.geoguessr-game-close:hover { background: var(--accent-secondary); color: var(--accent-primary); }
+
+.geoguessr-game-content { flex: 1; overflow: hidden; padding: 0; }
+
 /* 4-Player Chess Board Styles */
 .chessboard {
     display: grid;
@@ -1899,6 +1915,9 @@ html[data-theme="dark"] .numberle-key:hover:not(:disabled) {
             </button>
             <button id="numberle-setup-btn" class="games-menu-item" title="Play Numberle">
               <i class="fas fa-calculator"></i> Numberle
+            </button>
+            <button id="geoguessr-setup-btn" class="games-menu-item" title="Play Geoguessr-like location guessing game">
+              <i class="fas fa-map"></i> Geoguessr
             </button>
           </div>
         </div>
@@ -2292,6 +2311,66 @@ html[data-theme="dark"] .numberle-key:hover:not(:disabled) {
   </div>
 </div>
 
+<!-- Geoguessr Setup Modal -->
+<div id="geoguessr-setup-overlay" class="chess-setup-overlay">
+  <div class="chess-setup-modal">
+    <h2 class="chess-setup-title">Create Geoguessr Game</h2>
+
+    <div class="setup-section">
+      <div class="setup-section-label">Game Mode</div>
+      <div class="setup-options">
+        <button class="geoguessr-setup-option-btn" data-mode="single" title="Single-player game">
+          <i class="fas fa-user"></i> Single-Player
+        </button>
+        <button class="geoguessr-setup-option-btn" data-mode="multiplayer" title="Multiplayer game">
+          <i class="fas fa-users"></i> Multiplayer
+        </button>
+      </div>
+    </div>
+
+    <div class="setup-section">
+      <div class="setup-section-label">Difficulty</div>
+      <div class="setup-options">
+        <button class="geoguessr-setup-option-btn" data-difficulty="easy" title="Easy - World locations">
+          <i class="fas fa-leaf"></i> Easy
+        </button>
+        <button class="geoguessr-setup-option-btn" data-difficulty="medium" title="Medium - Major cities">
+          <i class="fas fa-mountain"></i> Medium
+        </button>
+        <button class="geoguessr-setup-option-btn" data-difficulty="hard" title="Hard - Random locations">
+          <i class="fas fa-fire"></i> Hard
+        </button>
+      </div>
+    </div>
+
+    <div class="setup-section" id="geoguessr-players-section" style="display: none;">
+      <div class="setup-section-label">Invite Players <span id="geoguessr-player-count" style="color: var(--text-secondary); font-weight: 400; font-size: 0.8rem;">(select up to 3)</span></div>
+      <div class="users-list" id="geoguessr-users-list"></div>
+      <div class="setup-validation-msg" id="geoguessr-validation-msg"></div>
+    </div>
+
+    <div class="setup-actions">
+      <button class="setup-action-btn" id="geoguessr-cancel-btn">Cancel</button>
+      <button class="setup-action-btn primary" id="geoguessr-create-btn" disabled>Start Game</button>
+    </div>
+  </div>
+</div>
+
+<!-- Geoguessr Game Modal -->
+<div id="geoguessr-game-overlay" class="geoguessr-game-overlay">
+  <div class="geoguessr-game-modal">
+    <div class="geoguessr-game-header">
+      <h2 class="geoguessr-game-title">Geoguessr</h2>
+      <button class="geoguessr-game-close" id="geoguessr-game-close" title="Close game">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="geoguessr-game-content">
+      <iframe id="geoguessr-game-iframe" src="" style="width: 100%; height: 100%; border: none; border-radius: var(--radius-md);"></iframe>
+    </div>
+  </div>
+</div>
+
 <!-- Chess Game Setup Modal -->
 <div id="chess-setup-overlay" class="chess-setup-overlay">
   <div class="chess-setup-modal">
@@ -2628,6 +2707,14 @@ var chessSetupState = {
     mode: null, // '2player' or '4player'
     timeControl: null, // '1m', '3m', '5m', '10m', '30m', 'unlimited'
     selectedUsers: [], // Array of usernames to invite
+    allUsers: [] // List of all available users (excluding current user)
+};
+
+// Geoguessr game setup state
+var geoguessrSetupState = {
+    mode: null, // 'single' or 'multiplayer'
+    difficulty: null, // 'easy', 'medium', 'hard'
+    selectedUsers: [], // Array of usernames to invite (for multiplayer)
     allUsers: [] // List of all available users (excluding current user)
 };
 
@@ -3833,6 +3920,162 @@ function ready() {
         console.log('[snake] Modal closed');
     }
 
+    function showGeoguessrSetupModal(allUsersForSetup) {
+        geoguessrSetupState.mode = null;
+        geoguessrSetupState.difficulty = null;
+        geoguessrSetupState.selectedUsers = [];
+        geoguessrSetupState.allUsers = allUsersForSetup || [];
+
+        var $overlay = $('#geoguessr-setup-overlay');
+        $overlay.addClass('show');
+
+        // Reset all options
+        $('.geoguessr-setup-option-btn').removeClass('selected');
+        $('#geoguessr-create-btn').prop('disabled', true);
+        $('#geoguessr-validation-msg').removeClass('show').text('');
+        $('#geoguessr-players-section').hide();
+
+        // Populate users list
+        updateGeoguessrSetupUsersList();
+    }
+
+    function hideGeoguessrSetupModal() {
+        $('#geoguessr-setup-overlay').removeClass('show');
+        geoguessrSetupState.mode = null;
+        geoguessrSetupState.difficulty = null;
+        geoguessrSetupState.selectedUsers = [];
+    }
+
+    function updateGeoguessrSetupUsersList() {
+        var $list = $('#geoguessr-users-list');
+        $list.empty();
+
+        geoguessrSetupState.allUsers.forEach(function(user) {
+            var isOnline = users && users.includes(user);
+            var dotClass = isOnline ? 'status-dot online' : 'status-dot offline';
+
+            var $item = $('<div class="user-checkbox-item" />');
+            var $checkbox = $('<input type="checkbox" />').attr('data-user', user);
+            var $label = $('<label class="user-checkbox-label" />');
+            $label.html('<span>' + user + '</span><div class="' + dotClass + '"></div>');
+
+            $item.append($checkbox);
+            $item.append($label);
+
+            $item.on('click', function(e) {
+                if (e.target.tagName !== 'INPUT') {
+                    $checkbox.prop('checked', !$checkbox.prop('checked'));
+                }
+                updateGeoguessrSetupSelection();
+            });
+
+            $checkbox.on('change', function() {
+                updateGeoguessrSetupSelection();
+            });
+
+            $list.append($item);
+        });
+    }
+
+    function updateGeoguessrSetupSelection() {
+        var $checkboxes = $('#geoguessr-users-list input[type="checkbox"]:checked');
+        geoguessrSetupState.selectedUsers = [];
+        $checkboxes.each(function() {
+            geoguessrSetupState.selectedUsers.push($(this).attr('data-user'));
+        });
+
+        validateGeoguessrSetupSelection();
+        updateGeoguessrSetupUI();
+    }
+
+    function validateGeoguessrSetupSelection() {
+        var $msg = $('#geoguessr-validation-msg');
+        var $createBtn = $('#geoguessr-create-btn');
+
+        $msg.removeClass('show').text('');
+
+        if (!geoguessrSetupState.mode || !geoguessrSetupState.difficulty) {
+            $createBtn.prop('disabled', true);
+            return;
+        }
+
+        if (geoguessrSetupState.mode === 'multiplayer') {
+            var maxPlayers = 3;
+            var selectedCount = geoguessrSetupState.selectedUsers.length;
+
+            if (selectedCount > maxPlayers) {
+                $msg.addClass('show').text('You can invite up to ' + maxPlayers + ' players for multiplayer mode.');
+                $createBtn.prop('disabled', true);
+                return;
+            }
+
+            if (selectedCount === 0) {
+                $msg.addClass('show').text('Please select at least 1 player to invite.');
+                $createBtn.prop('disabled', true);
+                return;
+            }
+        }
+
+        $createBtn.prop('disabled', false);
+    }
+
+    function updateGeoguessrSetupUI() {
+        var maxPlayers = 3;
+        $('#geoguessr-player-count').text('(select up to ' + maxPlayers + ')');
+
+        if (geoguessrSetupState.mode === 'multiplayer') {
+            var $checkboxes = $('#geoguessr-users-list input[type="checkbox"]');
+            if (geoguessrSetupState.selectedUsers.length >= maxPlayers) {
+                $checkboxes.not(':checked').prop('disabled', true);
+            } else {
+                $checkboxes.prop('disabled', false);
+            }
+        }
+    }
+
+    function showGeoguessrGameModal(gameUrl) {
+        $('#geoguessr-game-iframe').attr('src', gameUrl);
+        $('#geoguessr-game-overlay').addClass('show');
+    }
+
+    function hideGeoguessrGameModal() {
+        $('#geoguessr-game-overlay').removeClass('show');
+        $('#geoguessr-game-iframe').attr('src', '');
+    }
+
+    function createGeoguessrGame() {
+        if (!geoguessrSetupState.mode || !geoguessrSetupState.difficulty) {
+            flashStatus('Please select game mode and difficulty');
+            return;
+        }
+
+        if (!ws || ws.readyState !== 1) {
+            flashStatus('Not connected to server');
+            return;
+        }
+
+        if (geoguessrSetupState.mode === 'single') {
+            // Single-player: open the game in a modal
+            var baseUrl = window.location.protocol + '//' + window.location.host;
+            var gameUrl = baseUrl + '/geoguessr.html?mode=single&difficulty=' + geoguessrSetupState.difficulty;
+            hideGeoguessrSetupModal();
+            showGeoguessrGameModal(gameUrl);
+        } else {
+            // Multiplayer: send invites to selected users
+            geoguessrSetupState.selectedUsers.forEach(function(toUser) {
+                ws.send(JSON.stringify({
+                    type: 'geoguessr_invite',
+                    to: toUser,
+                    difficulty: geoguessrSetupState.difficulty
+                }));
+            });
+
+            flashStatus('Game created! Waiting for ' + geoguessrSetupState.selectedUsers.length + ' player' + (geoguessrSetupState.selectedUsers.length !== 1 ? 's' : '') + ' to accept...');
+
+            // Close the modal
+            hideGeoguessrSetupModal();
+        }
+    }
 
     // Games dropdown menu toggle
     $('#games-menu-btn').on('click', function(e) {
@@ -5632,6 +5875,79 @@ function ready() {
         }
     });
 
+    // Geoguessr setup modal handlers
+    $('#geoguessr-setup-btn').on('click', function(e) {
+        e.preventDefault();
+        // Get all users except current user
+        var me = $('#username').text().trim();
+        var allUsersForSetup = [];
+        $('#connected .user-info .user-name span').each(function() {
+            var userName = $(this).text().trim();
+            if (userName && userName !== me) {
+                allUsersForSetup.push(userName);
+            }
+        });
+        showGeoguessrSetupModal(allUsersForSetup);
+        $('#games-dropdown-menu').addClass('hidden');
+    });
+
+    $('#geoguessr-cancel-btn').on('click', function(e) {
+        e.preventDefault();
+        hideGeoguessrSetupModal();
+    });
+
+    $(document).on('click', '.geoguessr-setup-option-btn', function(e) {
+        e.preventDefault();
+        var $this = $(this);
+        var mode = $this.data('mode');
+        var difficulty = $this.data('difficulty');
+
+        if (mode) {
+            // Mode button clicked
+            $('[data-mode].geoguessr-setup-option-btn').removeClass('selected');
+            $this.addClass('selected');
+            geoguessrSetupState.mode = mode;
+            // Show/hide players section based on mode
+            if (mode === 'multiplayer') {
+                $('#geoguessr-players-section').show();
+            } else {
+                $('#geoguessr-players-section').hide();
+            }
+        } else if (difficulty) {
+            // Difficulty button clicked
+            $('[data-difficulty].geoguessr-setup-option-btn').removeClass('selected');
+            $this.addClass('selected');
+            geoguessrSetupState.difficulty = difficulty;
+        }
+
+        validateGeoguessrSetupSelection();
+        updateGeoguessrSetupUI();
+    });
+
+    $('#geoguessr-create-btn').on('click', function(e) {
+        e.preventDefault();
+        if (!$(this).prop('disabled')) {
+            createGeoguessrGame();
+        }
+    });
+
+    $(document).on('change', '#geoguessr-users-list input[type="checkbox"]', function() {
+        updateGeoguessrSetupSelection();
+    });
+
+    // Geoguessr game modal handlers
+    $('#geoguessr-game-close').on('click', function(e) {
+        e.preventDefault();
+        hideGeoguessrGameModal();
+    });
+
+    // Close game modal when clicking outside
+    $('#geoguessr-game-overlay').on('click', function(e) {
+        if (e.target.id === 'geoguessr-game-overlay') {
+            hideGeoguessrGameModal();
+        }
+    });
+
     // Admin delete users modal handlers
     $('#admin-delete-users-close').on('click', function() {
         hideAdminDeleteUsersModal();
@@ -5720,16 +6036,38 @@ function ready() {
     $('#invites').on('click', '.invite-accept', function() {
         var $inviteItem = $(this).closest('.invite-item');
         var fromUser = $inviteItem.data('from');
-        var gameMode = $inviteItem.data('mode') || '4player';
-        var sessionId = $inviteItem.data('session-id');
+        var gameType = $inviteItem.data('game-type');
 
-        console.log('[4p-chess-client] Accept clicked:', {from: fromUser, mode: gameMode, sessionId: sessionId});
+        if (gameType === 'geoguessr') {
+            var gameId = $inviteItem.data('game-id');
+            var difficulty = $inviteItem.data('difficulty');
+            console.log('[geoguessr-client] Accept clicked:', {from: fromUser, gameId: gameId, difficulty: difficulty});
 
-        if (ws && ws.readyState === 1) {
-            var payload = { type: 'chess_invite_accept', from: fromUser };
-            if (sessionId) payload.sessionId = sessionId;
-            console.log('[4p-chess-client] Sending payload:', payload);
-            ws.send(JSON.stringify(payload));
+            if (ws && ws.readyState === 1) {
+                var payload = { type: 'geoguessr_invite_accept', from: fromUser, gameId: gameId };
+                console.log('[geoguessr-client] Sending payload:', payload);
+                ws.send(JSON.stringify(payload));
+            }
+
+            // Open Geoguessr game in modal
+            if (gameId) {
+                var baseUrl = window.location.protocol + '//' + window.location.host;
+                var gameUrl = baseUrl + '/geoguessr.html?gameId=' + gameId + '&difficulty=' + (difficulty || 'medium');
+                showGeoguessrGameModal(gameUrl);
+            }
+        } else {
+            // Chess invite
+            var gameMode = $inviteItem.data('mode') || '4player';
+            var sessionId = $inviteItem.data('session-id');
+
+            console.log('[4p-chess-client] Accept clicked:', {from: fromUser, mode: gameMode, sessionId: sessionId});
+
+            if (ws && ws.readyState === 1) {
+                var payload = { type: 'chess_invite_accept', from: fromUser };
+                if (sessionId) payload.sessionId = sessionId;
+                console.log('[4p-chess-client] Sending payload:', payload);
+                ws.send(JSON.stringify(payload));
+            }
         }
 
         $inviteItem.remove();
@@ -6744,6 +7082,16 @@ function ready() {
         $('#invites').append(item);
     }
 
+    function addGeoguessrInvite(fromUser, gameId, difficulty) {
+        console.log('[geoguessr-client] Creating geoguessr invite item:', {from: fromUser, gameId: gameId, difficulty: difficulty});
+        var item = $('<div class="invite-item" />').attr('data-from', fromUser).attr('data-game-id', gameId || '').attr('data-game-type', 'geoguessr').attr('data-difficulty', difficulty || 'medium').text('Geoguessr game from ' + fromUser);
+        var actions = $('<span class="invite-actions" />');
+        actions.append('<button class="invite-btn invite-accept">Accept</button>');
+        actions.append('<button class="invite-btn invite-decline">Decline</button>');
+        item.append(actions);
+        $('#invites').append(item);
+    }
+
     function showRejoinPrompt() {
         if (!$('#invites #rejoin-game').length) {
             var wrap = $('<div class="user-row" id="rejoin-wrapper" />');
@@ -7172,6 +7520,11 @@ function ready() {
         else if (data['type'] === 'chess_invite') {
             console.log('[4p-chess-client] Received chess_invite:', data);
             addInvite(data['from'], data['mode'], data['timeControl'], data['sessionId']);
+            if (document.hidden || data['offline']) { __chessUnread += 1; __updateTitleBadge(); }
+        }
+        else if (data['type'] === 'geoguessr_invite') {
+            console.log('[geoguessr-client] Received geoguessr_invite:', data);
+            addGeoguessrInvite(data['from'], data['gameId'], data['difficulty']);
             if (document.hidden || data['offline']) { __chessUnread += 1; __updateTitleBadge(); }
         }
         else if (data['type'] === 'admin_delete_users_modal') {
