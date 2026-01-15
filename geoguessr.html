@@ -671,6 +671,15 @@
             if (data.type === 'geoguessr_player_guess') {
                 const playerGuess = data.guess;
                 updatePlayerGuess(data.player, playerGuess);
+            } else if (data.type === 'geoguessr_player_ready') {
+                playersReady[data.player] = true;
+                const totalPlayers = Object.keys(gameState.players).length;
+                const readyPlayers = Object.keys(playersReady).length;
+
+                // Check if all players are ready
+                if (readyPlayers === totalPlayers) {
+                    submitGuess();
+                }
             } else if (data.type === 'geoguessr_round_complete') {
                 completeRound(data.scores);
             } else if (data.type === 'geoguessr_game_over') {
