@@ -994,14 +994,15 @@
         }
 
         function updatePlayerGuess(player, guess) {
-            if (guessMarker) guessMarker.remove();
-            const guessEl = document.createElement('div');
-            guessEl.className = 'marker-icon guess';
-            guessEl.innerHTML = '🎯';
-
-            guessMarker = new mapboxgl.Marker({ element: guessEl })
-                .setLngLat([guess.lng, guess.lat])
-                .addTo(map);
+            if (guessMarker) map.removeLayer(guessMarker);
+            guessMarker = L.circleMarker([guess.lat, guess.lng], {
+                radius: 8,
+                fillColor: '#fbbf24',
+                color: '#f59e0b',
+                weight: 2,
+                opacity: 1,
+                fillOpacity: 0.8
+            }).addTo(map);
         }
 
         function completeRound(scores) {
