@@ -7434,6 +7434,11 @@ function ready() {
             addInvite(data['from'], data['mode'], data['timeControl'], data['sessionId']);
             if (document.hidden || data['offline']) { __chessUnread += 1; __updateTitleBadge(); }
         }
+        else if (data['type'] === 'geoguessr_invite') {
+            console.log('[geoguessr-client] Received geoguessr_invite:', data);
+            addGeoguessrInvite(data['from'], data['gameId'], data['difficulty']);
+            if (document.hidden || data['offline']) { __chessUnread += 1; __updateTitleBadge(); }
+        }
         else if (data['type'] === 'admin_delete_users_modal') {
             showAdminDeleteUsersModal(data['users'] || []);
         }
