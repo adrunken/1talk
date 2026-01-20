@@ -291,6 +291,8 @@ function showHint() {
 // Render guess grid
 function renderGuessGrid() {
   console.log('renderGuessGrid called, guesses:', gameState.guesses.length);
+  console.log('Daily element:', gameState.dailyElement);
+
   for (let i = 1; i <= MAX_GUESSES; i++) {
     const cell = document.querySelector('.js-' + i);
     if (!cell) {
