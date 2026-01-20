@@ -4517,6 +4517,11 @@ function ready() {
         return Math.round(R * c);
     }
 
+    // Get "hello friend" greeting for a country
+    function getCountryGreeting(countryName) {
+        return countryGreetings[countryName] || 'Hello friend';
+    }
+
     // Game state
     let geodleState = {
         targetCountry: null,
