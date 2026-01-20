@@ -9,51 +9,104 @@ let gameState = {
 
 // Get or create daily element
 function getDailyElement() {
-  const today = new Date().toDateString();
-  const stored = localStorage.getItem('elementle_date');
-  const storedGuesses = localStorage.getItem('elementle_guesses');
-  
-  if (stored === today && storedGuesses) {
-    gameState.guesses = JSON.parse(storedGuesses);
-  } else {
-    localStorage.setItem('elementle_date', today);
-    gameState.guesses = [];
+  if (typeof ELEMENTS === 'undefined' || !ELEMENTS || ELEMENTS.length === 0) {
+    console.error('ELEMENTS array is not loaded');
+    return null;
   }
-  
-  const storedElement = localStorage.getItem('elementle_element_' + today);
-  if (storedElement) {
-    gameState.dailyElement = JSON.parse(storedElement);
-  } else {
-    const seed = new Date(today).getTime();
-    const randomIndex = Math.floor((seed / 1000) % ELEMENTS.length);
-    gameState.dailyElement = ELEMENTS[randomIndex];
-    localStorage.setItem('elementle_element_' + today, JSON.stringify(gameState.dailyElement));
+
+  console.log('getDailyElement called, ELEMENTS count:', ELEMENTS.length);
+  try {
+    const today = new Date().toDateString();
+    let stored, storedGuesses, storedElement;
+
+    // Try to access localStorage with error handling
+    try {
+      stored = localStorage.getItem('elementle_date');
+      storedGuesses = localStorage.getItem('elementle_guesses');
+    } catch (e) {
+      console.warn('localStorage not available, using memory only');
+      stored = null;
+      storedGuesses = null;
+    }
+
+    if (stored === today && storedGuesses) {
+      gameState.guesses = JSON.parse(storedGuesses);
+    } else {
+      try {
+        localStorage.setItem('elementle_date', today);
+      } catch (e) {
+        console.warn('Cannot write to localStorage');
+      }
+      gameState.guesses = [];
+    }
+
+    try {
+      storedElement = localStorage.getItem('elementle_element_' + today);
+    } catch (e) {
+      storedElement = null;
+    }
+
+    if (storedElement) {
+      gameState.dailyElement = JSON.parse(storedElement);
+    } else {
+      const seed = new Date(today).getTime();
+      const randomIndex = Math.floor((seed / 1000) % ELEMENTS.length);
+      gameState.dailyElement = ELEMENTS[randomIndex];
+      try {
+        localStorage.setItem('elementle_element_' + today, JSON.stringify(gameState.dailyElement));
+      } catch (e) {
+        console.warn('Cannot write to localStorage');
+      }
+    }
+
+    return gameState.dailyElement;
+  } catch (error) {
+    console.error('Error in getDailyElement:', error);
+    return null;
   }
-  
-  return gameState.dailyElement;
 }
 
 // Initialize game
 function initializeGame() {
-  getDailyElement();
-  renderGuessGrid();
-  updateCountdown();
-  setInterval(updateCountdown, 1000);
-  
-  // Event listeners
-  document.querySelector('.js-guess-button').addEventListener('click', makeGuess);
-  document.querySelector('.js-hint-button').addEventListener('click', showHint);
-  document.querySelector('.js-help-button').addEventListener('click', showHelp);
-  document.querySelector('.js-stats-button').addEventListener('click', showStats);
-  document.querySelector('.js-change-mode-button').addEventListener('click', toggleMode);
-  document.querySelector('.js-guess-input').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-      makeGuess();
+  try {
+    const element = getDailyElement();
+    if (!element) {
+      console.error('Failed to get daily element. Retrying in 500ms...');
+      setTimeout(initializeGame, 500);
+      return;
     }
-  });
-  
-  // Autocomplete
-  setupAutocomplete();
+
+    renderGuessGrid();
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+
+    // Event listeners
+    const guessBtn = document.querySelector('.js-guess-button');
+    if (guessBtn) {
+      guessBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        console.log('GUESS button clicked');
+        makeGuess();
+      });
+    } else {
+      console.error('GUESS button (.js-guess-button) not found');
+    }
+    document.querySelector('.js-hint-button').addEventListener('click', showHint);
+    document.querySelector('.js-help-button').addEventListener('click', showHelp);
+    document.querySelector('.js-stats-button').addEventListener('click', showStats);
+    document.querySelector('.js-change-mode-button').addEventListener('click', toggleMode);
+    document.querySelector('.js-guess-input').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        makeGuess();
+      }
+    });
+
+    // Autocomplete
+    setupAutocomplete();
+  } catch (error) {
+    console.error('Error initializing game:', error);
+    setTimeout(initializeGame, 500);
+  }
 }
 
 // Setup autocomplete
@@ -108,42 +161,69 @@ function removeAutocompleteList() {
 
 // Make a guess
 function makeGuess() {
-  const input = document.querySelector('.js-guess-input');
-  const guess = input.value.trim();
-  
-  if (!guess) return;
-  
-  const element = getElementByName(guess);
-  if (!element) {
-    showPopup('Element not found!');
-    return;
+  try {
+    console.log('makeGuess called');
+    const input = document.querySelector('.js-guess-input');
+    if (!input) {
+      console.error('Input element (.js-guess-input) not found');
+      return;
+    }
+
+    const guess = input.value.trim();
+    console.log('Guess value:', guess);
+
+    if (!guess) {
+      console.log('Empty guess, returning');
+      return;
+    }
+
+    const element = getElementByName(guess);
+    console.log('Element found:', element);
+    if (!element) {
+      console.log('Element not found for:', guess);
+      showPopup('Element not found!');
+      return;
+    }
+
+    if (gameState.guesses.some(g => g.number === element.number)) {
+      console.log('Element already guessed');
+      showPopup('Already guessed!');
+      return;
+    }
+
+    console.log('Adding guess:', element);
+    gameState.guesses.push(element);
+    console.log('Current guesses:', gameState.guesses);
+    console.log('Daily element:', gameState.dailyElement);
+
+    // Try to save to localStorage with error handling
+    try {
+      localStorage.setItem('elementle_guesses', JSON.stringify(gameState.guesses));
+    } catch (e) {
+      console.warn('Cannot write to localStorage:', e);
+    }
+
+    input.value = '';
+    removeAutocompleteList();
+
+    renderGuessGrid();
+
+    if (element.number === gameState.dailyElement.number) {
+      gameState.won = true;
+      gameState.gameOver = true;
+      showPopup('Correct! You won!');
+      confetti();
+      showShareButton();
+    } else if (gameState.guesses.length >= MAX_GUESSES) {
+      gameState.gameOver = true;
+      showPopup('Game Over! Element: ' + gameState.dailyElement.name);
+      showRevealAnswer();
+    }
+
+    disableGameIfOver();
+  } catch (error) {
+    console.error('Error in makeGuess:', error);
   }
-  
-  if (gameState.guesses.some(g => g.number === element.number)) {
-    showPopup('Already guessed!');
-    return;
-  }
-  
-  gameState.guesses.push(element);
-  localStorage.setItem('elementle_guesses', JSON.stringify(gameState.guesses));
-  input.value = '';
-  removeAutocompleteList();
-  
-  renderGuessGrid();
-  
-  if (element.number === gameState.dailyElement.number) {
-    gameState.won = true;
-    gameState.gameOver = true;
-    showPopup('Correct! You won!');
-    confetti();
-    showShareButton();
-  } else if (gameState.guesses.length >= MAX_GUESSES) {
-    gameState.gameOver = true;
-    showPopup('Game Over! Element: ' + gameState.dailyElement.name);
-    showRevealAnswer();
-  }
-  
-  disableGameIfOver();
 }
 
 // Show hint
@@ -170,12 +250,18 @@ function showHint() {
 
 // Render guess grid
 function renderGuessGrid() {
+  console.log('renderGuessGrid called, guesses:', gameState.guesses.length);
   for (let i = 1; i <= MAX_GUESSES; i++) {
     const cell = document.querySelector('.js-' + i);
+    if (!cell) {
+      console.warn('Cell .js-' + i + ' not found in DOM');
+      continue;
+    }
     cell.innerHTML = '';
     cell.className = 'element';
-    
+
     if (i <= gameState.guesses.length) {
+      console.log('Rendering guess', i, ':', gameState.guesses[i - 1]);
       const guessedElement = gameState.guesses[i - 1];
       const isCorrect = guessedElement.number === gameState.dailyElement.number;
       
@@ -210,15 +296,14 @@ function renderGuessGrid() {
       const target = gameState.dailyElement;
       const guessNum = guessedElement.number;
       const targetNum = target.number;
-      
-      if (!isCorrect) {
-        if (Math.abs(guessNum - targetNum) <= 5) {
-          symbol.classList.add('yellow');
-        } else if (Math.abs(guessNum - targetNum) <= 15) {
-          symbol.classList.add('green');
-        }
-      } else {
+      const difference = Math.abs(guessNum - targetNum);
+
+      if (isCorrect) {
         symbol.classList.add('green');
+      } else if (difference <= 5) {
+        symbol.classList.add('yellow');
+      } else {
+        symbol.classList.add('red');
       }
     }
   }
@@ -282,8 +367,21 @@ function updateCountdown() {
 
 // Show popup message
 function showPopup(message) {
-  // Simple alert for now
-  console.log(message);
+  const popup = document.createElement('div');
+  popup.className = 'popup';
+  popup.textContent = message;
+  document.body.appendChild(popup);
+
+  // Show popup with animation
+  setTimeout(() => {
+    popup.style.opacity = '1';
+  }, 10);
+
+  // Remove popup after 3 seconds
+  setTimeout(() => {
+    popup.style.opacity = '0';
+    setTimeout(() => popup.remove(), 500);
+  }, 3000);
 }
 
 // Show help
@@ -329,9 +427,18 @@ function shareResult() {
   }
 }
 
-// Initialize when DOM is loaded
+// Initialize when DOM is loaded and ELEMENTS is available
+function tryInitialize() {
+  if (typeof ELEMENTS !== 'undefined' && ELEMENTS && ELEMENTS.length > 0) {
+    initializeGame();
+  } else {
+    // Wait a bit and try again
+    setTimeout(tryInitialize, 100);
+  }
+}
+
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initializeGame);
+  document.addEventListener('DOMContentLoaded', tryInitialize);
 } else {
-  initializeGame();
+  tryInitialize();
 }
