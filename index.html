@@ -5769,6 +5769,18 @@ function ready() {
         initNumberleGame();
     });
 
+    // Elementle event handlers
+    $('#elementle-setup-btn').on('click', function(e) {
+        e.preventDefault();
+        $('#games-dropdown-menu').addClass('hidden');
+        $('#elementle-overlay').removeClass('hidden');
+    });
+
+    $('#elementle-close').on('click', function(e) {
+        e.preventDefault();
+        $('#elementle-overlay').addClass('hidden');
+    });
+
     // Keyboard support for Numberle
     $(document).on('keydown', function(e) {
         if ($('#numberle-overlay').hasClass('hidden')) return;
