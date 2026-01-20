@@ -177,17 +177,23 @@ function makeGuess() {
     }
 
     const element = getElementByName(guess);
+    console.log('Element found:', element);
     if (!element) {
+      console.log('Element not found for:', guess);
       showPopup('Element not found!');
       return;
     }
 
     if (gameState.guesses.some(g => g.number === element.number)) {
+      console.log('Element already guessed');
       showPopup('Already guessed!');
       return;
     }
 
+    console.log('Adding guess:', element);
     gameState.guesses.push(element);
+    console.log('Current guesses:', gameState.guesses);
+    console.log('Daily element:', gameState.dailyElement);
 
     // Try to save to localStorage with error handling
     try {
