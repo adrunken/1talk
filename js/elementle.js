@@ -281,8 +281,21 @@ function updateCountdown() {
 
 // Show popup message
 function showPopup(message) {
-  // Simple alert for now
-  console.log(message);
+  const popup = document.createElement('div');
+  popup.className = 'popup';
+  popup.textContent = message;
+  document.body.appendChild(popup);
+
+  // Show popup with animation
+  setTimeout(() => {
+    popup.style.opacity = '1';
+  }, 10);
+
+  // Remove popup after 3 seconds
+  setTimeout(() => {
+    popup.style.opacity = '0';
+    setTimeout(() => popup.remove(), 500);
+  }, 3000);
 }
 
 // Show help
