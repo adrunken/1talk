@@ -231,6 +231,10 @@ function showHint() {
 function renderGuessGrid() {
   for (let i = 1; i <= MAX_GUESSES; i++) {
     const cell = document.querySelector('.js-' + i);
+    if (!cell) {
+      console.warn('Cell .js-' + i + ' not found in DOM');
+      continue;
+    }
     cell.innerHTML = '';
     cell.className = 'element';
     
