@@ -4537,6 +4537,7 @@ function ready() {
         geodleState.won = false;
 
         $('#geodle-target-info').text('???');
+        $('#geodle-target-greeting').text(getCountryGreeting(geodleState.targetCountry.name));
         $('#geodle-guesses').empty();
         $('#geodle-input').val('').prop('disabled', false);
         $('#geodle-guess-btn').prop('disabled', false);
