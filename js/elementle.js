@@ -143,7 +143,12 @@ function initializeGame() {
 function setupAutocomplete() {
   const input = document.querySelector('.js-guess-input');
   const wrapper = document.querySelector('.js-autocomplete-wrapper');
-  
+
+  if (!input || !wrapper) {
+    console.warn('Autocomplete setup: input or wrapper element not found');
+    return;
+  }
+
   input.addEventListener('input', function() {
     const value = this.value.toLowerCase();
     removeAutocompleteList();
