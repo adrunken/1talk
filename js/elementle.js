@@ -135,7 +135,11 @@ function makeGuess() {
     gameState.won = true;
     gameState.gameOver = true;
     showPopup('Correct! You won!');
-    confetti();
+    try {
+      confetti();
+    } catch(e) {
+      console.log('Confetti library not available');
+    }
     showShareButton();
   } else if (gameState.guesses.length >= MAX_GUESSES) {
     gameState.gameOver = true;
