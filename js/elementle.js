@@ -80,7 +80,16 @@ function initializeGame() {
     setInterval(updateCountdown, 1000);
 
     // Event listeners
-    document.querySelector('.js-guess-button').addEventListener('click', makeGuess);
+    const guessBtn = document.querySelector('.js-guess-button');
+    if (guessBtn) {
+      guessBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        console.log('GUESS button clicked');
+        makeGuess();
+      });
+    } else {
+      console.error('GUESS button (.js-guess-button) not found');
+    }
     document.querySelector('.js-hint-button').addEventListener('click', showHint);
     document.querySelector('.js-help-button').addEventListener('click', showHelp);
     document.querySelector('.js-stats-button').addEventListener('click', showStats);
