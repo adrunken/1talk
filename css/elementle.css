@@ -35,14 +35,7 @@ button {
 
 /*Navbar*/
 .navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  position: relative;
-  padding: 10px 20px;
-  color: white;
-  font-size: 48px;
-  border-bottom: 2px solid rgb(97, 97, 97);
+  display: none;
 }
 
 .nav-center {
