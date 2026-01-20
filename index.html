@@ -1345,6 +1345,103 @@ html[data-theme="dark"] .numberle-key:hover:not(:disabled) {
     }
 }
 
+/* ============= ELEMENTLE STYLES ============= */
+.elementle-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+.elementle-overlay.hidden {
+    display: none !important;
+}
+
+.elementle-modal {
+    position: relative;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-xl);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    max-width: 1200px;
+    width: 95vw;
+    height: 90vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+html[data-theme="dark"] .elementle-modal {
+    background: #1e293b;
+}
+
+.elementle-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-light);
+    background: var(--bg-secondary);
+}
+
+.elementle-title {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: 0.15em;
+}
+
+.elementle-close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-secondary);
+    padding: 0.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s ease;
+}
+
+.elementle-close-btn:hover {
+    color: var(--accent-primary);
+}
+
+.elementle-container {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.elementle-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    flex: 1;
+}
+
+@media (max-width: 600px) {
+    .elementle-modal {
+        max-width: 100%;
+        height: 95vh;
+        width: 100%;
+    }
+
+    .elementle-title {
+        font-size: 1.25rem;
+    }
+}
+
 /* Animations */
 @keyframes fadeIn {
     from {
@@ -1916,6 +2013,9 @@ html[data-theme="dark"] .numberle-key:hover:not(:disabled) {
             <button id="numberle-setup-btn" class="games-menu-item" title="Play Numberle">
               <i class="fas fa-calculator"></i> Numberle
             </button>
+            <button id="elementle-setup-btn" class="games-menu-item" title="Guess the chemical element">
+              <i class="fas fa-atom"></i> Elementle
+            </button>
             <button id="geoguessr-setup-btn" class="games-menu-item" title="Play Geoguessr-like location guessing game">
               <i class="fas fa-map"></i> Geoguessr
             </button>
@@ -2308,6 +2408,24 @@ html[data-theme="dark"] .numberle-key:hover:not(:disabled) {
       <button id="numberle-reset-btn" class="numberle-reset-btn">
         Play Again
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- Elementle Game Modal -->
+<div id="elementle-overlay" class="hidden elementle-overlay">
+  <div class="elementle-modal">
+    <!-- Header -->
+    <div class="elementle-header">
+      <h2 class="elementle-title">ELEMENTLE</h2>
+      <button id="elementle-close" class="elementle-close-btn" title="Close">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- Game Container -->
+    <div class="elementle-container">
+      <iframe id="elementle-iframe" src="elementle.html" class="elementle-iframe" title="Elementle Game" sandbox="allow-same-origin allow-scripts allow-forms allow-popups"></iframe>
     </div>
   </div>
 </div>
@@ -5649,6 +5767,18 @@ function ready() {
     $('#numberle-reset-btn').on('click', function(e) {
         e.preventDefault();
         initNumberleGame();
+    });
+
+    // Elementle event handlers
+    $('#elementle-setup-btn').on('click', function(e) {
+        e.preventDefault();
+        $('#games-dropdown-menu').addClass('hidden');
+        $('#elementle-overlay').removeClass('hidden');
+    });
+
+    $('#elementle-close').on('click', function(e) {
+        e.preventDefault();
+        $('#elementle-overlay').addClass('hidden');
     });
 
     // Keyboard support for Numberle
