@@ -1062,6 +1062,49 @@ html[data-theme="dark"] .wordle-key:hover:not(:disabled) {
     display: none !important;
 }
 
+/* Elementle Modal Styles */
+.elementle-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.elementle-overlay.hidden {
+    display: none !important;
+}
+
+.elementle-modal {
+    position: relative;
+    width: 95vw;
+    max-width: 900px;
+    height: 90vh;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-xl);
+    box-shadow: 0 4px 23px 0 rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+}
+
+.elementle-close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    cursor: pointer;
+    z-index: 1001;
+    padding: 5px;
+}
+
 .numberle-modal {
     position: relative;
     background: var(--bg-secondary);
