@@ -5365,7 +5365,7 @@ function ready() {
 
         try {
             const leftResult = eval(leftStr);
-            const rightResult = parseInt(rightStr);
+            const rightResult = eval(rightStr);
 
             return leftResult === rightResult;
         } catch (e) {
