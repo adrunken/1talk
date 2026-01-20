@@ -357,9 +357,18 @@ function shareResult() {
   }
 }
 
-// Initialize when DOM is loaded
+// Initialize when DOM is loaded and ELEMENTS is available
+function tryInitialize() {
+  if (typeof ELEMENTS !== 'undefined' && ELEMENTS && ELEMENTS.length > 0) {
+    initializeGame();
+  } else {
+    // Wait a bit and try again
+    setTimeout(tryInitialize, 100);
+  }
+}
+
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initializeGame);
+  document.addEventListener('DOMContentLoaded', tryInitialize);
 } else {
-  initializeGame();
+  tryInitialize();
 }
