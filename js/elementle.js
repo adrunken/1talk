@@ -352,12 +352,17 @@ function renderGuessGrid() {
 // Show share button
 function showShareButton() {
   const container = document.querySelector('.js-share-button');
+  if (!container) {
+    console.warn('Share button container (.js-share-button) not found');
+    return;
+  }
+
   const btn = document.createElement('button');
   btn.className = 'share-button';
   btn.textContent = 'Share';
   btn.onclick = shareResult;
   container.appendChild(btn);
-  
+
   const infoLink = document.createElement('a');
   infoLink.className = 'additional-info';
   infoLink.href = '#';
@@ -366,14 +371,21 @@ function showShareButton() {
     e.preventDefault();
     window.open('https://en.wikipedia.org/wiki/' + gameState.dailyElement.name);
   };
-  
+
   const infoContainer = document.querySelector('.js-additional-info');
-  infoContainer.appendChild(infoLink);
+  if (infoContainer) {
+    infoContainer.appendChild(infoLink);
+  }
 }
 
 // Show reveal answer
 function showRevealAnswer() {
   const container = document.querySelector('.js-reveal-answer');
+  if (!container) {
+    console.warn('Reveal answer container (.js-reveal-answer) not found');
+    return;
+  }
+
   const div = document.createElement('div');
   div.className = 'reveal-answer';
   div.textContent = 'The element was: ' + gameState.dailyElement.name + ' (' + gameState.dailyElement.symbol + ')';
@@ -383,9 +395,13 @@ function showRevealAnswer() {
 // Disable game if over
 function disableGameIfOver() {
   if (gameState.gameOver) {
-    document.querySelector('.js-guess-input').disabled = true;
-    document.querySelector('.js-guess-button').disabled = true;
-    document.querySelector('.js-hint-button').disabled = true;
+    const input = document.querySelector('.js-guess-input');
+    const guessBtn = document.querySelector('.js-guess-button');
+    const hintBtn = document.querySelector('.js-hint-button');
+
+    if (input) input.disabled = true;
+    if (guessBtn) guessBtn.disabled = true;
+    if (hintBtn) hintBtn.disabled = true;
   }
 }
 
@@ -394,15 +410,19 @@ function updateCountdown() {
   const now = new Date();
   const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
   tomorrow.setHours(0, 0, 0, 0);
-  
+
   const timeLeft = tomorrow - now;
   const hours = Math.floor(timeLeft / (60 * 60 * 1000));
   const minutes = Math.floor((timeLeft % (60 * 60 * 1000)) / (60 * 1000));
   const seconds = Math.floor((timeLeft % (60 * 1000)) / 1000);
-  
-  document.querySelector('.js-hours').textContent = String(hours).padStart(2, '0');
-  document.querySelector('.js-minutes').textContent = String(minutes).padStart(2, '0');
-  document.querySelector('.js-seconds').textContent = String(seconds).padStart(2, '0');
+
+  const hoursEl = document.querySelector('.js-hours');
+  const minutesEl = document.querySelector('.js-minutes');
+  const secondsEl = document.querySelector('.js-seconds');
+
+  if (hoursEl) hoursEl.textContent = String(hours).padStart(2, '0');
+  if (minutesEl) minutesEl.textContent = String(minutes).padStart(2, '0');
+  if (secondsEl) secondsEl.textContent = String(seconds).padStart(2, '0');
 }
 
 // Show popup message
