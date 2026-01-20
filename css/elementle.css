@@ -119,8 +119,9 @@ button {
   padding: unset;
   margin: unset;
   position: absolute;
+  top: 100%;
   width: 100%;
-  z-index: 1;
+  z-index: 1000;
 }
 
 .autocomplete-list li {
