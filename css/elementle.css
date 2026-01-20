@@ -475,8 +475,7 @@ a.additional-info:hover {
 
 /*Footer styles*/
 footer {
-  background-color: #111;
-  margin-top: 100px;
+  display: none;
 }
 
 .footer-container {
