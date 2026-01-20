@@ -1,0 +1,749 @@
+/*Default styles*/
+@import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=Iceland&display=swap');
+
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  font-family: "Iceland", sans-serif;
+}
+
+body {
+  background-color: rgb(25, 25, 25);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+main {
+  flex-grow: 1;
+}
+
+button {
+  cursor: pointer;
+}
+
+.container {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 60px;
+}
+
+/*Navbar*/
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  padding: 10px 20px;
+  color: white;
+  font-size: 48px;
+  border-bottom: 2px solid rgb(97, 97, 97);
+}
+
+.nav-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+}
+
+.nav-left, .nav-right {
+  display: flex;
+}
+
+.nav-button {
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  padding: none;
+  background: none;
+  margin: 0px 10px;
+}
+
+.nav-button:hover svg {
+  transform: scale(1.2);
+  fill: green;
+  transition: transform 0.1s ease-in, fill 0.1s ease-in;
+}
+
+.green-letter {
+  color: green;
+}
+
+/*Guessing area*/
+.guess-input {
+  font-size: 20px;
+  padding: 10px;
+  background-color: rgb(42, 42, 42);
+  border: 2px solid white;
+  color: white;
+  width: 300px;
+  border-radius: 10px;
+}
+
+
+.guess-input:disabled,
+.guess-button:disabled {
+  cursor: not-allowed;
+}
+
+.guess-button,
+.hint-button {
+  font-size: 20px;
+  padding: 10px;
+  border: 2px solid white;
+  background-color: green;
+  color: white;
+  width: 100px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.hint-container {
+  font-size: 20px;
+  margin-top: 10px;
+}
+
+.guess-button:hover,
+.hint-button:hover {
+  background-color: rgb(0, 155, 0);
+}
+
+.autocomplete-list {
+  list-style: none;
+  padding: unset;
+  margin: unset;
+  position: absolute;
+  width: 100%;
+  z-index: 1;
+}
+
+.autocomplete-list li {
+  border: 1px solid white;
+  border-top: unset;
+  background-color: rgb(42, 42, 42);
+}
+
+.autocomplete-list li:hover {
+  background: rgb(97, 97, 97);
+}
+
+.autocomplete-list button {
+  border: unset;
+  background: unset;
+  color: white ;
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 6px;
+  font-size: 20px;
+}
+
+.autocomplete-wrapper {
+  display: inline-block;
+  position: relative;
+}
+
+/*Display results*/
+a.additional-info,
+.share-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 50px; /* Same height for both elements */
+  line-height: normal; /* Ensures text is centered */
+}
+
+a.additional-info {
+  display: inline-block;
+  padding: 8px 16px;
+  text-decoration: none;
+  background-color: rgb(42, 42, 42);
+  color: white;
+  border: 2px solid white;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: center;
+  transition: 0.3s;
+  margin-right: 10px;
+  margin-top: 20px;
+  font-size: 20px;
+}
+
+a.additional-info:hover {
+  background-color: rgb(97, 97, 97);
+}
+
+.guess-button:disabled,
+.guess-input:disabled {
+  cursor: disabled;
+}
+
+.share-button {
+  font-size: 20px;
+  border: 2px solid white;
+  padding: 10px 16px;
+  background-color: rgb(42, 42, 42);
+  color: white;
+  border-radius: 8px;
+  transition: 0.3s;
+  overflow: hidden;
+  white-space: nowrap;
+  width: auto;
+  min-width: 75px;
+  max-width: 200px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.share-button:hover {
+  background-color: rgb(97, 97, 97);
+}
+
+.correct-guess-container {
+  display: flex;
+}
+
+/*Popup*/
+.popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+  transition: opacity 0.5s ease;
+  opacity: 0;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.overlay {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  color: black;
+  font-size: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+.overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/*Display guesses section*/
+.grid-container {
+  margin-top: 55px;
+  display: flex;
+  justify-content: center;
+}
+
+.element-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-gap: 20px;
+}
+
+.element {
+  position: relative;
+  width: 250px;
+  height: 250px;
+  border: 2px solid rgb(97, 97, 97);
+  border-radius: 15px;
+  background-color: rgb(42, 42, 42);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.element.guessed-element:hover {
+  transform: scale(1.025);
+  box-shadow: rgba(255, 255, 255, 0.16) 0px 5px 18px 0px, rgba(255, 255, 255, 0.06) 0px 0px 0px 1px;
+}
+
+.name {
+  font-size: 20px;
+}
+
+.atomic-number,
+.family {
+  position: absolute;
+  color: white;
+  font-size: 20px;
+}
+
+.atomic-number {
+  top: 5px;
+  left: 5px;
+}
+
+.family {
+  bottom: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 20px;
+}
+
+.symbol {
+  font-size: 80px;
+}
+
+.green {
+  color: rgb(83, 141, 78);
+}
+
+.yellow {
+  color: rgb(181, 159, 59);
+}
+
+.reveal-answer {
+  margin-top: 55px;
+  background-color: rgb(192, 223, 251);
+  border-radius: 4px;
+  padding: 10px 16px;
+  font-size: 20px;
+  color: rgb(48, 98, 144);
+}
+
+/*Shake animation*/
+.shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  50% { transform: translateX(5px); }
+  75% { transform: translateX(-5px); }
+  100% { transform: translateX(0); }
+}
+
+.glow-red {
+  border: 2px solid red;
+  box-shadow: 0 0 10px red;
+}
+
+/*Game info styles*/
+.stats-container {
+  background-color: #2a2a2a;
+  border: 2px solid rgb(97, 97, 97);
+  border-radius: 5px;
+  padding: 20px;
+  width: 300px;
+  margin: 20px auto;
+  text-align: center;
+  color: white;
+}
+
+.stats {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 100px;
+}
+
+.number {
+  font-size: 1.5em;
+  font-weight: bold;
+  margin: 0;
+}
+
+.stat-name {
+  margin: 0;
+  font-size: 0.75em;
+  color: #666;
+}
+
+.guess-distribution {
+  text-align: center;
+}
+
+.bars-container {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.bar-container {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+}
+
+.bar-background {
+  background-color: #e2e8f0;
+  height: 10px;
+  border-radius: 5px;
+  width: 100%;
+  position: relative;
+}
+
+.bar-foreground {
+  background-color: #4A90E2;
+  height: 100%;
+  border-radius: 5px;
+}
+
+.bar-label, .bar-count  {
+  font-size: 16px;
+  color: #fff;
+  font-weight: bold;
+}
+
+.back-button {
+  font-size: 20px;
+  padding: 10px;
+  background-color: green;
+  color: white;
+  width: 100px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  border: none;
+  margin-top: 30px;
+}
+
+.back-button:hover {
+  background-color: rgb(0, 155, 0);
+}
+
+.help-container {
+  background-color: #2a2a2a;
+  border: 2px solid rgb(97, 97, 97);
+  border-radius: 5px;
+  padding: 20px;
+  width: 800px;
+  margin: 20px auto;
+  text-align: center;
+  color: white;
+}
+
+.help-container ul {
+  list-style-type: disc;
+  padding-left: 20px;
+  text-align: left;
+}
+
+.help-container li {
+  margin: 10px 0;
+}
+
+.help-container a {
+  display: inline-block;
+  margin-top: 20px;
+  padding: 10px 20px;
+  background-color: green;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: all 0.3s;
+}
+
+.help-container a:hover {
+  background-color: rgb(0, 155, 0);
+}
+
+/* Timebox */
+.timebox {
+  display: flex;
+  justify-content: center;
+  font-size: 25px;
+  margin-top: 20px;
+}
+
+/*Footer styles*/
+footer {
+  background-color: #111;
+  margin-top: 100px;
+}
+
+.footer-container {
+  width: 100%;
+  padding: 10px 30px 20px;
+}
+
+.social-icons {
+  display: flex;
+  justify-content: center;
+}
+
+.social-icons a {
+  text-decoration: none;
+  padding: 10px;
+  background-color: white;
+  margin: 10px;
+  border-radius: 50%;
+}
+
+.social-icons a i {
+  font-size: 1em;
+  color: black;
+  opacity: 0.9;
+}
+
+.social-icons a:hover {
+  background-color: #111;
+  transition: 0.5s;
+}
+
+.social-icons a:hover i {
+  color: white;
+  transition: 0.5s;
+}
+
+.footer-nav ul {
+  display: flex;
+  justify-content: center;
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-nav ul li {
+  margin: 0 5px;
+}
+
+.footer-nav ul li a {
+  color: white;
+  margin: 20px;
+  text-decoration: none;
+  font-size: 16px;
+  opacity: 0.7;
+  transition: 0.5s;
+}
+
+.footer-nav ul li a:hover {
+  opacity: 1;
+}
+
+.footer-bottom {
+  background-color: #000;
+  padding: 20px;
+  text-align: center;
+}
+
+.footer-bottom p {
+  color: white;
+}
+
+/*Fade animation*/
+@keyframes fadeInText {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.fade-in-text {
+  animation: fadeInText 0.5s ease-in forwards;
+}
+
+.credit {
+  opacity: 0.7;
+}
+
+/*Adjusting for screens under 1201px wide*/
+@media (max-width: 1200px) {
+  .footer-nav ul {
+    flex-direction: column;
+    align-items: center;
+    padding: 0;
+  }
+
+  .footer-nav ul li {
+    width: 100%;
+    text-align: center;
+    margin: 10px 0;
+  }
+
+  h1 {
+    font-size: 50px;
+  }
+
+  .guess-input {
+    width: 100%;
+  }
+
+  .guess-button,
+  .hint-button {
+    width: 100px;
+    font-size: 16px;
+    padding: 8px;
+    margin: 5px auto;
+    display: block;
+  }
+
+  .share-button,
+  .back-button {
+    width: 75px;
+    font-size: 20px;
+    padding: 8px;
+    margin-top: 5px;
+  }
+
+  .element {
+    width: 200px;
+    height: 200px;
+    padding: 10px;
+  }
+
+  .element-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .atomic-number,
+  .family {
+    font-size: 16px;
+  }
+
+  .symbol {
+    font-size: 64px;
+  }
+
+  .container {
+    padding: 10px;
+  }
+
+  .help-container {
+    width: 90%;
+  }
+
+  a.additional-info {
+    display: inline-block;
+    padding: 8px 16px;
+    text-decoration: none;
+    background-color: rgb(42, 42, 42);
+    color: white;
+    border: 2px solid white;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: center;
+    transition: 0.3s;
+    margin-right: 10px;
+    margin-top: 20px;
+    font-size: 20px;
+  }
+  
+  .share-button {
+    font-size: 20px;
+    border: 2px solid white;
+    padding: 10px 16px;
+    background-color: rgb(42, 42, 42);
+    color: white;
+    border-radius: 8px;
+    transition: 0.3s;
+    overflow: hidden;
+    white-space: nowrap;
+    width: auto;
+    min-width: 75px;
+    max-width: 200px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 20px;
+  }
+  .navbar {
+    font-size: 30px;
+  }
+}
+
+@media (max-width: 700px){
+  .navbar {
+    font-size: 25px;
+  }
+}
+
+/*Adjusting for screens under 451px wide*/
+@media (max-width: 450px) {
+  .element {
+    width: 150px;
+    height: 150px;
+    padding: 8px;
+  }
+
+  .element-grid {
+    grid-template-columns: repeat(2, 1fr);
+    grid-gap: 8px;
+  }
+
+  .atomic-number,
+  .family {
+    font-size: 12px;
+  }
+
+  .symbol {
+    font-size: 48px;
+  }
+
+  .share-button,
+  a.additional-info {
+    font-size: 18px;
+    padding: 8px 12px;
+    min-width: 60px;
+    height: 50px;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+
+  a.additional-info {
+    text-decoration: none;
+    background-color: rgb(42, 42, 42);
+    color: white;
+    border: 2px solid white;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+
+  .stats {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .stats-container {
+    width: 90%;
+  }
+
+  .navbar {
+    font-size: 24px;
+  }
+  
+  .nav-button {
+    font-size: 10px;
+    margin: 0 5px;
+  }
+}
