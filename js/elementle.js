@@ -9,17 +9,22 @@ let gameState = {
 
 // Get or create daily element
 function getDailyElement() {
+  if (typeof ELEMENTS === 'undefined' || !ELEMENTS || ELEMENTS.length === 0) {
+    console.error('ELEMENTS array is not loaded');
+    return null;
+  }
+
   const today = new Date().toDateString();
   const stored = localStorage.getItem('elementle_date');
   const storedGuesses = localStorage.getItem('elementle_guesses');
-  
+
   if (stored === today && storedGuesses) {
     gameState.guesses = JSON.parse(storedGuesses);
   } else {
     localStorage.setItem('elementle_date', today);
     gameState.guesses = [];
   }
-  
+
   const storedElement = localStorage.getItem('elementle_element_' + today);
   if (storedElement) {
     gameState.dailyElement = JSON.parse(storedElement);
@@ -29,7 +34,7 @@ function getDailyElement() {
     gameState.dailyElement = ELEMENTS[randomIndex];
     localStorage.setItem('elementle_element_' + today, JSON.stringify(gameState.dailyElement));
   }
-  
+
   return gameState.dailyElement;
 }
 
