@@ -14,28 +14,55 @@ function getDailyElement() {
     return null;
   }
 
-  const today = new Date().toDateString();
-  const stored = localStorage.getItem('elementle_date');
-  const storedGuesses = localStorage.getItem('elementle_guesses');
+  try {
+    const today = new Date().toDateString();
+    let stored, storedGuesses, storedElement;
 
-  if (stored === today && storedGuesses) {
-    gameState.guesses = JSON.parse(storedGuesses);
-  } else {
-    localStorage.setItem('elementle_date', today);
-    gameState.guesses = [];
+    // Try to access localStorage with error handling
+    try {
+      stored = localStorage.getItem('elementle_date');
+      storedGuesses = localStorage.getItem('elementle_guesses');
+    } catch (e) {
+      console.warn('localStorage not available, using memory only');
+      stored = null;
+      storedGuesses = null;
+    }
+
+    if (stored === today && storedGuesses) {
+      gameState.guesses = JSON.parse(storedGuesses);
+    } else {
+      try {
+        localStorage.setItem('elementle_date', today);
+      } catch (e) {
+        console.warn('Cannot write to localStorage');
+      }
+      gameState.guesses = [];
+    }
+
+    try {
+      storedElement = localStorage.getItem('elementle_element_' + today);
+    } catch (e) {
+      storedElement = null;
+    }
+
+    if (storedElement) {
+      gameState.dailyElement = JSON.parse(storedElement);
+    } else {
+      const seed = new Date(today).getTime();
+      const randomIndex = Math.floor((seed / 1000) % ELEMENTS.length);
+      gameState.dailyElement = ELEMENTS[randomIndex];
+      try {
+        localStorage.setItem('elementle_element_' + today, JSON.stringify(gameState.dailyElement));
+      } catch (e) {
+        console.warn('Cannot write to localStorage');
+      }
+    }
+
+    return gameState.dailyElement;
+  } catch (error) {
+    console.error('Error in getDailyElement:', error);
+    return null;
   }
-
-  const storedElement = localStorage.getItem('elementle_element_' + today);
-  if (storedElement) {
-    gameState.dailyElement = JSON.parse(storedElement);
-  } else {
-    const seed = new Date(today).getTime();
-    const randomIndex = Math.floor((seed / 1000) % ELEMENTS.length);
-    gameState.dailyElement = ELEMENTS[randomIndex];
-    localStorage.setItem('elementle_element_' + today, JSON.stringify(gameState.dailyElement));
-  }
-
-  return gameState.dailyElement;
 }
 
 // Initialize game
