@@ -309,6 +309,8 @@ a.additional-info:hover {
 
 .symbol {
   font-size: 80px;
+  color: white;
+  font-weight: bold;
 }
 
 .green {
