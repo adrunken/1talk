@@ -210,15 +210,14 @@ function renderGuessGrid() {
       const target = gameState.dailyElement;
       const guessNum = guessedElement.number;
       const targetNum = target.number;
-      
-      if (!isCorrect) {
-        if (Math.abs(guessNum - targetNum) <= 5) {
-          symbol.classList.add('yellow');
-        } else if (Math.abs(guessNum - targetNum) <= 15) {
-          symbol.classList.add('green');
-        }
-      } else {
+      const difference = Math.abs(guessNum - targetNum);
+
+      if (isCorrect) {
         symbol.classList.add('green');
+      } else if (difference <= 5) {
+        symbol.classList.add('yellow');
+      } else {
+        symbol.classList.add('red');
       }
     }
   }
