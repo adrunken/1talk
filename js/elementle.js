@@ -297,12 +297,25 @@ function renderGuessGrid() {
   console.log('renderGuessGrid called, guesses:', gameState.guesses.length);
   console.log('Daily element:', gameState.dailyElement);
 
+  // Check if grid exists
+  const grid = document.querySelector('.element-grid');
+  if (!grid) {
+    console.error('Element grid container not found in DOM!');
+    return;
+  }
+  console.log('Element grid found, children count:', grid.children.length);
+
   for (let i = 1; i <= MAX_GUESSES; i++) {
     const cell = document.querySelector('.js-' + i);
     if (!cell) {
       console.warn('Cell .js-' + i + ' not found in DOM');
+      console.log('Attempting to find cell by checking grid children:');
+      if (grid && grid.children[i - 1]) {
+        console.log('Found cell as grid child at index', i - 1);
+      }
       continue;
     }
+    console.log('Found cell .js-' + i + ', current content:', cell.innerHTML);
     cell.innerHTML = '';
     cell.className = 'element';
 
