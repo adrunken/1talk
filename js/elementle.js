@@ -249,6 +249,7 @@ function showHint() {
 
 // Render guess grid
 function renderGuessGrid() {
+  console.log('renderGuessGrid called, guesses:', gameState.guesses.length);
   for (let i = 1; i <= MAX_GUESSES; i++) {
     const cell = document.querySelector('.js-' + i);
     if (!cell) {
@@ -257,8 +258,9 @@ function renderGuessGrid() {
     }
     cell.innerHTML = '';
     cell.className = 'element';
-    
+
     if (i <= gameState.guesses.length) {
+      console.log('Rendering guess', i, ':', gameState.guesses[i - 1]);
       const guessedElement = gameState.guesses[i - 1];
       const isCorrect = guessedElement.number === gameState.dailyElement.number;
       
