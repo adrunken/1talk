@@ -40,25 +40,36 @@ function getDailyElement() {
 
 // Initialize game
 function initializeGame() {
-  getDailyElement();
-  renderGuessGrid();
-  updateCountdown();
-  setInterval(updateCountdown, 1000);
-  
-  // Event listeners
-  document.querySelector('.js-guess-button').addEventListener('click', makeGuess);
-  document.querySelector('.js-hint-button').addEventListener('click', showHint);
-  document.querySelector('.js-help-button').addEventListener('click', showHelp);
-  document.querySelector('.js-stats-button').addEventListener('click', showStats);
-  document.querySelector('.js-change-mode-button').addEventListener('click', toggleMode);
-  document.querySelector('.js-guess-input').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-      makeGuess();
+  try {
+    const element = getDailyElement();
+    if (!element) {
+      console.error('Failed to get daily element. Retrying in 500ms...');
+      setTimeout(initializeGame, 500);
+      return;
     }
-  });
-  
-  // Autocomplete
-  setupAutocomplete();
+
+    renderGuessGrid();
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+
+    // Event listeners
+    document.querySelector('.js-guess-button').addEventListener('click', makeGuess);
+    document.querySelector('.js-hint-button').addEventListener('click', showHint);
+    document.querySelector('.js-help-button').addEventListener('click', showHelp);
+    document.querySelector('.js-stats-button').addEventListener('click', showStats);
+    document.querySelector('.js-change-mode-button').addEventListener('click', toggleMode);
+    document.querySelector('.js-guess-input').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        makeGuess();
+      }
+    });
+
+    // Autocomplete
+    setupAutocomplete();
+  } catch (error) {
+    console.error('Error initializing game:', error);
+    setTimeout(initializeGame, 500);
+  }
 }
 
 // Setup autocomplete
