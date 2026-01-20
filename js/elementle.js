@@ -161,15 +161,20 @@ function removeAutocompleteList() {
 // Make a guess
 function makeGuess() {
   try {
+    console.log('makeGuess called');
     const input = document.querySelector('.js-guess-input');
     if (!input) {
-      console.error('Input element not found');
+      console.error('Input element (.js-guess-input) not found');
       return;
     }
 
     const guess = input.value.trim();
+    console.log('Guess value:', guess);
 
-    if (!guess) return;
+    if (!guess) {
+      console.log('Empty guess, returning');
+      return;
+    }
 
     const element = getElementByName(guess);
     if (!element) {
