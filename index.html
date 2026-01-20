@@ -4890,6 +4890,13 @@ function ready() {
         $('#geodle-overlay').addClass('hidden');
     });
 
+    // Elementle setup handler
+    $('#elementle-setup-btn').on('click', function(e) {
+        e.preventDefault();
+        $('#games-dropdown-menu').addClass('hidden');
+        window.location.href = '/elementle';
+    });
+
     $('#geodle-guess-btn').on('click', function(e) {
         e.preventDefault();
         const input = $('#geodle-input').val().trim();
