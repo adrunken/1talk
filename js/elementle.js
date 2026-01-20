@@ -151,42 +151,58 @@ function removeAutocompleteList() {
 
 // Make a guess
 function makeGuess() {
-  const input = document.querySelector('.js-guess-input');
-  const guess = input.value.trim();
-  
-  if (!guess) return;
-  
-  const element = getElementByName(guess);
-  if (!element) {
-    showPopup('Element not found!');
-    return;
+  try {
+    const input = document.querySelector('.js-guess-input');
+    if (!input) {
+      console.error('Input element not found');
+      return;
+    }
+
+    const guess = input.value.trim();
+
+    if (!guess) return;
+
+    const element = getElementByName(guess);
+    if (!element) {
+      showPopup('Element not found!');
+      return;
+    }
+
+    if (gameState.guesses.some(g => g.number === element.number)) {
+      showPopup('Already guessed!');
+      return;
+    }
+
+    gameState.guesses.push(element);
+
+    // Try to save to localStorage with error handling
+    try {
+      localStorage.setItem('elementle_guesses', JSON.stringify(gameState.guesses));
+    } catch (e) {
+      console.warn('Cannot write to localStorage:', e);
+    }
+
+    input.value = '';
+    removeAutocompleteList();
+
+    renderGuessGrid();
+
+    if (element.number === gameState.dailyElement.number) {
+      gameState.won = true;
+      gameState.gameOver = true;
+      showPopup('Correct! You won!');
+      confetti();
+      showShareButton();
+    } else if (gameState.guesses.length >= MAX_GUESSES) {
+      gameState.gameOver = true;
+      showPopup('Game Over! Element: ' + gameState.dailyElement.name);
+      showRevealAnswer();
+    }
+
+    disableGameIfOver();
+  } catch (error) {
+    console.error('Error in makeGuess:', error);
   }
-  
-  if (gameState.guesses.some(g => g.number === element.number)) {
-    showPopup('Already guessed!');
-    return;
-  }
-  
-  gameState.guesses.push(element);
-  localStorage.setItem('elementle_guesses', JSON.stringify(gameState.guesses));
-  input.value = '';
-  removeAutocompleteList();
-  
-  renderGuessGrid();
-  
-  if (element.number === gameState.dailyElement.number) {
-    gameState.won = true;
-    gameState.gameOver = true;
-    showPopup('Correct! You won!');
-    confetti();
-    showShareButton();
-  } else if (gameState.guesses.length >= MAX_GUESSES) {
-    gameState.gameOver = true;
-    showPopup('Game Over! Element: ' + gameState.dailyElement.name);
-    showRevealAnswer();
-  }
-  
-  disableGameIfOver();
 }
 
 // Show hint
