@@ -264,21 +264,26 @@ function makeGuess() {
 // Show hint
 function showHint() {
   const hintContainer = document.querySelector('.js-hint-container');
+  if (!hintContainer) {
+    console.warn('Hint container (.js-hint-container) not found');
+    return;
+  }
+
   if (gameState.guesses.length === 0) {
     hintContainer.textContent = 'Make a guess first!';
     return;
   }
-  
+
   const lastGuess = gameState.guesses[gameState.guesses.length - 1];
   const target = gameState.dailyElement;
-  
+
   let hint = '';
   if (lastGuess.number < target.number) {
     hint = `${target.name} has atomic number higher than ${lastGuess.number}`;
   } else {
     hint = `${target.name} has atomic number lower than ${lastGuess.number}`;
   }
-  
+
   hintContainer.textContent = 'Hint: ' + hint;
   hintContainer.classList.add('fade-in-text');
 }
