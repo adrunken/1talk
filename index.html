@@ -2209,6 +2209,7 @@ html[data-theme="dark"] .numberle-key:hover:not(:disabled) {
         <div style="padding: 1rem; background: var(--bg-tertiary); border-radius: var(--radius-lg); border: 1px solid var(--border-light);">
           <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Target Country</div>
           <div id="geodle-target-info" style="font-size: 1.25rem; font-weight: 600; color: var(--accent-primary);">???</div>
+          <div id="geodle-target-greeting" style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.5rem; font-style: italic;"></div>
         </div>
 
         <!-- Guesses -->
@@ -4305,6 +4306,205 @@ function ready() {
         {name: 'Zimbabwe', lat: -19.0154, lng: 29.1549}
     ];
 
+    // Language translations for "good luck" by country
+    const countryGreetings = {
+        'Afghanistan': 'خوش قسمتی',
+        'Albania': 'Pafat i mirë',
+        'Algeria': 'حظا موفقا',
+        'Andorra': 'Bona sort',
+        'Angola': 'Boa sorte',
+        'Argentina': 'Buena suerte',
+        'Armenia': 'Բարի հաջողություն',
+        'Australia': 'Good luck',
+        'Austria': 'Viel Glück',
+        'Azerbaijan': 'Xoş qismətlər',
+        'Bahamas': 'Good luck',
+        'Bahrain': 'حظا موفقا',
+        'Bangladesh': 'শুভ কামনা',
+        'Barbados': 'Good luck',
+        'Belarus': 'Удачі',
+        'Belgium': 'Veel sterkte',
+        'Belize': 'Buena suerte',
+        'Benin': 'Bonne chance',
+        'Bhutan': 'སྐལ་བ་གསོད་',
+        'Bolivia': 'Buena suerte',
+        'Bosnia': 'Sretno',
+        'Botswana': 'Go itumela',
+        'Brazil': 'Boa sorte',
+        'Brunei': 'Semoga beruntung',
+        'Bulgaria': 'Много щастие',
+        'Burkina Faso': 'Bonne chance',
+        'Burundi': 'Bahati njema',
+        'Cambodia': 'សូមស្វាគមន៍',
+        'Cameroon': 'Bonne chance',
+        'Canada': 'Good luck',
+        'Cape Verde': 'Boa sorte',
+        'Central African Republic': 'Bonne chance',
+        'Chad': 'Bonne chance',
+        'Chile': 'Buena suerte',
+        'China': '祝你好运',
+        'Colombia': 'Buena suerte',
+        'Comoros': 'Bahati njema',
+        'Congo': 'Bonne chance',
+        'Costa Rica': 'Buena suerte',
+        'Croatia': 'Sretno',
+        'Cuba': 'Buena suerte',
+        'Cyprus': 'Καλή τύχη',
+        'Czech Republic': 'Hodně štěstí',
+        'Czechia': 'Hodně štěstí',
+        'Denmark': 'Held og lykke',
+        'Djibouti': 'حظا موفقا',
+        'Dominica': 'Good luck',
+        'Dominican Republic': 'Buena suerte',
+        'Ecuador': 'Buena suerte',
+        'Egypt': 'حظا موفقا',
+        'El Salvador': 'Buena suerte',
+        'Equatorial Guinea': 'Buena suerte',
+        'Eritrea': 'ሩጁው ይህ ጌና',
+        'Estonia': 'Edu edu',
+        'Ethiopia': 'ሩጁው ይህ ጌና',
+        'Fiji': 'Good luck',
+        'Finland': 'Onnea',
+        'France': 'Bonne chance',
+        'Gabon': 'Bonne chance',
+        'Gambia': 'Good luck',
+        'Georgia': 'წილად გისურვებთ',
+        'Germany': 'Viel Glück',
+        'Ghana': 'Good luck',
+        'Greece': 'Καλή τύχη',
+        'Grenada': 'Good luck',
+        'Guatemala': 'Buena suerte',
+        'Guinea': 'Bonne chance',
+        'Guinea-Bissau': 'Boa sorte',
+        'Guyana': 'Good luck',
+        'Haiti': 'Bonne chance',
+        'Honduras': 'Buena suerte',
+        'Hong Kong': '祝你好运',
+        'Hungary': 'Sok szerencsét',
+        'Iceland': 'Gangi þér vel',
+        'India': 'शुभकामनाएं',
+        'Indonesia': 'Semoga beruntung',
+        'Iran': 'خوش قسمتی',
+        'Iraq': 'حظا موفقا',
+        'Ireland': 'Good luck',
+        'Israel': 'בהצלחה',
+        'Italy': 'Buona fortuna',
+        'Ivory Coast': 'Bonne chance',
+        'Jamaica': 'Good luck',
+        'Japan': '頑張って',
+        'Jordan': 'حظا موفقا',
+        'Kazakhstan': 'Сәтті болсын',
+        'Kenya': 'Bahati njema',
+        'Kiribati': 'Good luck',
+        'Kuwait': 'حظا موفقا',
+        'Kyrgyzstan': 'Сәтті болсун',
+        'Laos': 'ໂຊກດີ',
+        'Latvia': 'Veiksmi',
+        'Lebanon': 'حظا موفقا',
+        'Lesotho': 'Go itumela',
+        'Liberia': 'Good luck',
+        'Libya': 'حظا موفقا',
+        'Liechtenstein': 'Viel Glück',
+        'Lithuania': 'Sėkmės',
+        'Luxembourg': 'Viel Glück',
+        'Madagascar': 'Bahagi tsara',
+        'Malawi': 'Good luck',
+        'Malaysia': 'Semoga beruntung',
+        'Maldives': 'Good luck',
+        'Mali': 'Bonne chance',
+        'Malta': 'Għażż it-tnejn',
+        'Marshall Islands': 'Good luck',
+        'Mauritania': 'حظا موفقا',
+        'Mauritius': 'Good luck',
+        'Mexico': 'Buena suerte',
+        'Micronesia': 'Good luck',
+        'Moldova': 'Mult noroc',
+        'Monaco': 'Bonne chance',
+        'Mongolia': 'Амжилт хүсье',
+        'Montenegro': 'Sretno',
+        'Morocco': 'حظا موفقا',
+        'Mozambique': 'Boa sorte',
+        'Myanmar': 'အောင်စမ်းပါ',
+        'Namibia': 'Good luck',
+        'Nauru': 'Good luck',
+        'Nepal': 'शुभकामनाएं',
+        'Netherlands': 'Veel sterkte',
+        'New Zealand': 'Good luck',
+        'Nicaragua': 'Buena suerte',
+        'Niger': 'Bonne chance',
+        'Nigeria': 'Good luck',
+        'North Korea': '행운을 빕니다',
+        'North Macedonia': 'Sretno',
+        'Norway': 'Lykke til',
+        'Oman': 'حظا موفقا',
+        'Pakistan': 'خوش قسمتی',
+        'Palau': 'Good luck',
+        'Palestine': 'حظا موفقا',
+        'Panama': 'Buena suerte',
+        'Papua New Guinea': 'Good luck',
+        'Paraguay': 'Buena suerte',
+        'Peru': 'Buena suerte',
+        'Philippines': 'Magandang swerte',
+        'Poland': 'Powodzenia',
+        'Portugal': 'Boa sorte',
+        'Qatar': 'حظا موفقا',
+        'Romania': 'Mult noroc',
+        'Russia': 'Удачи',
+        'Rwanda': 'Bahati njema',
+        'Saint Kitts and Nevis': 'Good luck',
+        'Saint Lucia': 'Good luck',
+        'Saint Vincent and the Grenadines': 'Good luck',
+        'Samoa': 'Good luck',
+        'San Marino': 'Buona fortuna',
+        'Sao Tome and Principe': 'Boa sorte',
+        'Saudi Arabia': 'حظا موفقا',
+        'Senegal': 'Bonne chance',
+        'Serbia': 'Sretno',
+        'Seychelles': 'Good luck',
+        'Sierra Leone': 'Good luck',
+        'Singapore': 'Good luck',
+        'Slovakia': 'Veľa štastia',
+        'Slovenia': 'Srečno',
+        'Solomon Islands': 'Good luck',
+        'Somalia': 'حظا موفقا',
+        'South Africa': 'Good luck',
+        'South Korea': '행운을 빕니다',
+        'South Sudan': 'Good luck',
+        'Spain': 'Buena suerte',
+        'Sri Lanka': 'ශුභ ගතියක්',
+        'Sudan': 'حظا موفقا',
+        'Suriname': 'Veel sterkte',
+        'Sweden': 'Lycka till',
+        'Switzerland': 'Viel Glück',
+        'Syria': 'حظا موفقا',
+        'Taiwan': '祝你好运',
+        'Tajikistan': 'Сәтті болсун',
+        'Tanzania': 'Bahati njema',
+        'Thailand': 'ขอให้โชคดี',
+        'Timor-Leste': 'Boa sorte',
+        'Togo': 'Bonne chance',
+        'Tonga': 'Good luck',
+        'Trinidad and Tobago': 'Good luck',
+        'Tunisia': 'حظا موفقا',
+        'Turkey': 'İyi şanslar',
+        'Turkmenistan': 'Сәтті болсун',
+        'Tuvalu': 'Good luck',
+        'Uganda': 'Bahati njema',
+        'Ukraine': 'Удачі',
+        'United Arab Emirates': 'حظا موفقا',
+        'United Kingdom': 'Good luck',
+        'United States': 'Good luck',
+        'Uruguay': 'Buena suerte',
+        'Uzbekistan': 'Сәтті болсун',
+        'Vanuatu': 'Good luck',
+        'Vatican City': 'Buona fortuna',
+        'Venezuela': 'Buena suerte',
+        'Vietnam': 'Chúc may mắn',
+        'Yemen': 'حظا موفقا',
+        'Zambia': 'Bahati njema',
+        'Zimbabwe': 'Bahati njema'
+    };
+
     // Haversine distance formula (km)
     function getDistance(lat1, lng1, lat2, lng2) {
         const R = 6371; // Earth radius in km
@@ -4315,6 +4515,11 @@ function ready() {
                   Math.sin(dLng / 2) * Math.sin(dLng / 2);
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return Math.round(R * c);
+    }
+
+    // Get "hello friend" greeting for a country
+    function getCountryGreeting(countryName) {
+        return countryGreetings[countryName] || 'Hello friend';
     }
 
     // Game state
@@ -4332,6 +4537,7 @@ function ready() {
         geodleState.won = false;
 
         $('#geodle-target-info').text('???');
+        $('#geodle-target-greeting').text(getCountryGreeting(geodleState.targetCountry.name));
         $('#geodle-guesses').empty();
         $('#geodle-input').val('').prop('disabled', false);
         $('#geodle-guess-btn').prop('disabled', false);
@@ -5365,7 +5571,7 @@ function ready() {
 
         try {
             const leftResult = eval(leftStr);
-            const rightResult = parseInt(rightStr);
+            const rightResult = eval(rightStr);
 
             return leftResult === rightResult;
         } catch (e) {
