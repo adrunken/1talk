@@ -91,15 +91,45 @@ function initializeGame() {
     } else {
       console.error('GUESS button (.js-guess-button) not found');
     }
-    document.querySelector('.js-hint-button').addEventListener('click', showHint);
-    document.querySelector('.js-help-button').addEventListener('click', showHelp);
-    document.querySelector('.js-stats-button').addEventListener('click', showStats);
-    document.querySelector('.js-change-mode-button').addEventListener('click', toggleMode);
-    document.querySelector('.js-guess-input').addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') {
-        makeGuess();
-      }
-    });
+
+    const hintBtn = document.querySelector('.js-hint-button');
+    if (hintBtn) {
+      hintBtn.addEventListener('click', showHint);
+    } else {
+      console.warn('HINT button (.js-hint-button) not found');
+    }
+
+    const helpBtn = document.querySelector('.js-help-button');
+    if (helpBtn) {
+      helpBtn.addEventListener('click', showHelp);
+    } else {
+      console.warn('HELP button (.js-help-button) not found');
+    }
+
+    const statsBtn = document.querySelector('.js-stats-button');
+    if (statsBtn) {
+      statsBtn.addEventListener('click', showStats);
+    } else {
+      console.warn('STATS button (.js-stats-button) not found');
+    }
+
+    const changeModeBtn = document.querySelector('.js-change-mode-button');
+    if (changeModeBtn) {
+      changeModeBtn.addEventListener('click', toggleMode);
+    } else {
+      console.warn('CHANGE MODE button (.js-change-mode-button) not found');
+    }
+
+    const guessInput = document.querySelector('.js-guess-input');
+    if (guessInput) {
+      guessInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          makeGuess();
+        }
+      });
+    } else {
+      console.error('Guess input (.js-guess-input) not found');
+    }
 
     // Autocomplete
     setupAutocomplete();
