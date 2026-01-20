@@ -318,6 +318,10 @@ a.additional-info:hover {
   color: rgb(181, 159, 59);
 }
 
+.red {
+  color: rgb(217, 48, 37);
+}
+
 .reveal-answer {
   margin-top: 55px;
   background-color: rgb(192, 223, 251);
