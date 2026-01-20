@@ -14,6 +14,7 @@ function getDailyElement() {
     return null;
   }
 
+  console.log('getDailyElement called, ELEMENTS count:', ELEMENTS.length);
   try {
     const today = new Date().toDateString();
     let stored, storedGuesses, storedElement;
