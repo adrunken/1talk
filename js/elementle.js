@@ -31,13 +31,23 @@ function getDailyElement() {
 
     if (stored === today && storedGuesses) {
       gameState.guesses = JSON.parse(storedGuesses);
-    } else {
+    } else if (gameState.guesses.length === 0) {
+      // Only clear guesses if we don't already have any
       try {
         localStorage.setItem('elementle_date', today);
       } catch (e) {
         console.warn('Cannot write to localStorage');
       }
       gameState.guesses = [];
+    } else {
+      // We have guesses but the date doesn't match or storedGuesses is missing
+      // This means we're starting a new day but have unsaved guesses from today
+      try {
+        localStorage.setItem('elementle_date', today);
+        localStorage.setItem('elementle_guesses', JSON.stringify(gameState.guesses));
+      } catch (e) {
+        console.warn('Cannot write to localStorage:', e);
+      }
     }
 
     try {
