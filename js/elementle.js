@@ -550,6 +550,7 @@ document.addEventListener('DOMContentLoaded', function() {
       gameState.guesses = [];
       gameState.gameOver = false;
       gameState.won = false;
+      gameState.isNewGame = true;
 
       // Clear localStorage
       try {
@@ -557,6 +558,24 @@ document.addEventListener('DOMContentLoaded', function() {
       } catch (e) {
         console.warn('[elementle] Could not clear localStorage');
       }
+
+      // Re-enable input and buttons
+      const input = document.querySelector('.js-guess-input');
+      const guessBtn = document.querySelector('.js-guess-button');
+      const hintBtn = document.querySelector('.js-hint-button');
+
+      if (input) input.disabled = false;
+      if (guessBtn) guessBtn.disabled = false;
+      if (hintBtn) hintBtn.disabled = false;
+
+      // Clear any previous messages
+      const revealContainer = document.querySelector('.js-reveal-answer');
+      const shareContainer = document.querySelector('.js-share-button');
+      const infoContainer = document.querySelector('.js-additional-info');
+
+      if (revealContainer) revealContainer.innerHTML = '';
+      if (shareContainer) shareContainer.innerHTML = '';
+      if (infoContainer) infoContainer.innerHTML = '';
 
       // Re-initialize the game
       initializeGame();
