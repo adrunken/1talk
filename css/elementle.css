@@ -268,6 +268,8 @@ a.additional-info:hover {
   position: relative;
   width: 180px;
   height: 180px;
+  min-width: 180px;
+  min-height: 180px;
   border: 2px solid rgb(97, 97, 97);
   border-radius: 15px;
   background-color: rgb(42, 42, 42);
@@ -277,6 +279,7 @@ a.additional-info:hover {
   justify-content: center;
   text-align: center;
   transition: all 0.3s ease;
+  box-sizing: border-box;
 }
 
 .element.guessed-element:hover {
