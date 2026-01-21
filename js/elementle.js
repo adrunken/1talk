@@ -307,6 +307,41 @@ function showHint() {
   hintContainer.classList.add('fade-in-text');
 }
 
+// Helper function to get letter highlights for a guess symbol (Wordle-style)
+function getSymbolLetterHighlights(guessSymbol, answerSymbol) {
+  const guessUpper = guessSymbol.toUpperCase();
+  const answerUpper = answerSymbol.toUpperCase();
+
+  // Track which letters in answer have been matched
+  const answerLetterCounts = {};
+  for (let char of answerUpper) {
+    answerLetterCounts[char] = (answerLetterCounts[char] || 0) + 1;
+  }
+
+  // First pass: mark correct positions
+  const highlights = new Array(guessUpper.length).fill(null);
+  for (let i = 0; i < guessUpper.length; i++) {
+    if (guessUpper[i] === answerUpper[i]) {
+      highlights[i] = 'green';
+      answerLetterCounts[guessUpper[i]]--;
+    }
+  }
+
+  // Second pass: mark wrong positions (yellow) or not in answer (gray)
+  for (let i = 0; i < guessUpper.length; i++) {
+    if (highlights[i] === null) {
+      if (answerLetterCounts[guessUpper[i]] > 0) {
+        highlights[i] = 'yellow';
+        answerLetterCounts[guessUpper[i]]--;
+      } else {
+        highlights[i] = 'gray';
+      }
+    }
+  }
+
+  return highlights;
+}
+
 // Render guess grid
 function renderGuessGrid() {
   console.log('[elementle] renderGuessGrid called, guesses:', gameState.guesses.length);
@@ -338,12 +373,19 @@ function renderGuessGrid() {
     if (i <= gameState.guesses.length) {
       console.log('[elementle] Rendering guess', i, ':', gameState.guesses[i - 1].name);
       const guessedElement = gameState.guesses[i - 1];
-      const isCorrect = guessedElement.number === gameState.dailyElement.number;
+      const target = gameState.dailyElement;
+      const isCorrect = guessedElement.number === target.number;
+      const isSameType = guessedElement.family === target.family;
 
       if (isCorrect) {
         cell.classList.add('guessed-element', 'correct-guess');
       } else {
         cell.classList.add('guessed-element');
+      }
+
+      // Apply element type highlighting (green if same family)
+      if (isSameType && !isCorrect) {
+        cell.classList.add('same-type');
       }
 
       const atomicNumber = document.createElement('div');
@@ -352,7 +394,15 @@ function renderGuessGrid() {
 
       const symbol = document.createElement('div');
       symbol.className = 'symbol';
-      symbol.textContent = guessedElement.symbol;
+
+      // Render symbol with per-letter highlighting (Wordle-style)
+      const symbolHighlights = getSymbolLetterHighlights(guessedElement.symbol, target.symbol);
+      for (let j = 0; j < guessedElement.symbol.length; j++) {
+        const letterSpan = document.createElement('span');
+        letterSpan.textContent = guessedElement.symbol[j];
+        letterSpan.className = 'symbol-letter ' + symbolHighlights[j];
+        symbol.appendChild(letterSpan);
+      }
 
       const name = document.createElement('div');
       name.className = 'name';
@@ -362,24 +412,15 @@ function renderGuessGrid() {
       family.className = 'family';
       family.textContent = guessedElement.family;
 
+      // Apply family highlighting (green if same type)
+      if (isSameType) {
+        family.classList.add('same-type-family');
+      }
+
       cell.appendChild(atomicNumber);
       cell.appendChild(symbol);
       cell.appendChild(name);
       cell.appendChild(family);
-
-      // Color code by accuracy
-      const target = gameState.dailyElement;
-      const guessNum = guessedElement.number;
-      const targetNum = target.number;
-      const difference = Math.abs(guessNum - targetNum);
-
-      if (isCorrect) {
-        symbol.classList.add('green');
-      } else if (difference <= 5) {
-        symbol.classList.add('yellow');
-      } else {
-        symbol.classList.add('red');
-      }
     }
   }
 }
