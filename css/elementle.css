@@ -314,15 +314,11 @@ a.additional-info:hover {
   font-size: 80px;
   color: white;
   font-weight: bold;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 2px;
 }
 
 .symbol-letter {
-  display: inline-block;
-  min-width: 0.5em;
+  display: inline;
+  white-space: nowrap;
 }
 
 .symbol-letter.green {
