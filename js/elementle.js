@@ -300,6 +300,7 @@ function showHint() {
 // Render guess grid
 function renderGuessGrid() {
   console.log('[elementle] renderGuessGrid called, guesses:', gameState.guesses.length);
+  console.log('[elementle] gameState.guesses content:', JSON.stringify(gameState.guesses.map(g => g.name)));
 
   // Check if grid exists
   const grid = document.querySelector('.element-grid');
