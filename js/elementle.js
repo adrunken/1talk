@@ -306,16 +306,21 @@ function renderGuessGrid() {
   console.log('Element grid found, children count:', grid.children.length);
 
   for (let i = 1; i <= MAX_GUESSES; i++) {
-    const cell = document.querySelector('.js-' + i);
+    let cell = document.querySelector('.js-' + i);
     if (!cell) {
-      console.warn('Cell .js-' + i + ' not found in DOM');
+      console.warn('Cell .js-' + i + ' not found via querySelector');
       console.log('Attempting to find cell by checking grid children:');
       if (grid && grid.children[i - 1]) {
+        cell = grid.children[i - 1];
         console.log('Found cell as grid child at index', i - 1);
+      } else {
+        console.error('Cell not found at grid index', i - 1);
+        continue;
       }
-      continue;
+    } else {
+      console.log('Found cell .js-' + i + ', current content:', cell.innerHTML);
     }
-    console.log('Found cell .js-' + i + ', current content:', cell.innerHTML);
+
     cell.innerHTML = '';
     cell.className = 'element';
 
