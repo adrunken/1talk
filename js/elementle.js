@@ -197,55 +197,45 @@ function removeAutocompleteList() {
 // Make a guess
 function makeGuess() {
   try {
-    console.log('makeGuess called');
+    console.log('[elementle] makeGuess called');
     const input = document.querySelector('.js-guess-input');
     if (!input) {
-      console.error('Input element (.js-guess-input) not found');
+      console.error('[elementle] Input element (.js-guess-input) not found');
       return;
     }
 
     const guess = input.value.trim();
-    console.log('Guess value:', guess);
-
     if (!guess) {
-      console.log('Empty guess, returning');
       return;
     }
 
     const element = getElementByName(guess);
-    console.log('Element found:', element);
     if (!element) {
-      console.log('Element not found for:', guess);
+      console.log('[elementle] Element not found for:', guess);
       showPopup('Element not found!');
       return;
     }
 
     if (gameState.guesses.some(g => g.number === element.number)) {
-      console.log('Element already guessed');
+      console.log('[elementle] Element already guessed:', element.name);
       showPopup('Already guessed!');
       return;
     }
 
-    console.log('Adding guess:', element);
+    console.log('[elementle] Adding guess:', element.name);
     gameState.guesses.push(element);
-    console.log('Current guesses:', gameState.guesses);
-    console.log('Daily element:', gameState.dailyElement);
-    console.log('Total guesses count:', gameState.guesses.length);
 
     // Try to save to localStorage with error handling
     try {
       localStorage.setItem('elementle_guesses', JSON.stringify(gameState.guesses));
-      console.log('Saved guesses to localStorage');
     } catch (e) {
-      console.warn('Cannot write to localStorage:', e);
+      console.warn('[elementle] Cannot write to localStorage:', e);
     }
 
     input.value = '';
     removeAutocompleteList();
 
-    console.log('About to render guess grid, current guesses length:', gameState.guesses.length);
     renderGuessGrid();
-    console.log('Rendered guess grid');
 
     if (element.number === gameState.dailyElement.number) {
       gameState.won = true;
