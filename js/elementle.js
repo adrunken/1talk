@@ -4,7 +4,8 @@ let gameState = {
   dailyElement: null,
   guesses: [],
   gameOver: false,
-  won: false
+  won: false,
+  isNewGame: false
 };
 
 // Get or create daily element
