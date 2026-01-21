@@ -8,6 +8,26 @@ let gameState = {
   isNewGame: false
 };
 
+// Debug helper function
+function debugGameState() {
+  console.log('=== GAME STATE DEBUG ===');
+  console.log('gameState.guesses.length:', gameState.guesses.length);
+  console.log('gameState.guesses:', gameState.guesses.map(g => ({ number: g.number, name: g.name, symbol: g.symbol })));
+  try {
+    const stored = localStorage.getItem('elementle_guesses');
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      console.log('localStorage guesses count:', parsed.length);
+      console.log('localStorage guesses:', parsed.map(g => ({ number: g.number, name: g.name, symbol: g.symbol })));
+    } else {
+      console.log('localStorage guesses: NONE');
+    }
+  } catch (e) {
+    console.warn('Could not read localStorage:', e);
+  }
+  console.log('========================');
+}
+
 // Get or create daily element
 function getDailyElement() {
   if (typeof ELEMENTS === 'undefined' || !ELEMENTS || ELEMENTS.length === 0) {
