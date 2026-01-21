@@ -217,7 +217,7 @@ function removeAutocompleteList() {
 // Make a guess
 function makeGuess() {
   try {
-    console.log('[elementle] makeGuess called');
+    console.log('[elementle] makeGuess called, current guesses:', gameState.guesses.length);
     const input = document.querySelector('.js-guess-input');
     if (!input) {
       console.error('[elementle] Input element (.js-guess-input) not found');
@@ -242,26 +242,28 @@ function makeGuess() {
       return;
     }
 
-    console.log('[elementle] Adding guess:', element.name);
-    console.log('[elementle] Guesses before push:', gameState.guesses.length);
+    // Add the guess
     gameState.guesses.push(element);
-    console.log('[elementle] Guesses after push:', gameState.guesses.length);
+    console.log('[elementle] Added guess:', element.name, '| Total guesses now:', gameState.guesses.length);
+    console.log('[elementle] All guesses:', gameState.guesses.map(g => g.name).join(', '));
 
-    // Try to save to localStorage with error handling
+    // Save to localStorage immediately
     try {
-      localStorage.setItem('elementle_guesses', JSON.stringify(gameState.guesses));
-      console.log('[elementle] Saved to localStorage, count:', gameState.guesses.length);
+      const guessesJson = JSON.stringify(gameState.guesses);
+      localStorage.setItem('elementle_guesses', guessesJson);
+      console.log('[elementle] Saved', gameState.guesses.length, 'guesses to localStorage');
     } catch (e) {
       console.warn('[elementle] Cannot write to localStorage:', e);
     }
 
+    // Clear input
     input.value = '';
     removeAutocompleteList();
 
-    console.log('[elementle] About to render grid, guesses count:', gameState.guesses.length);
+    // Render the grid with all guesses
     renderGuessGrid();
-    console.log('[elementle] After render grid, guesses count:', gameState.guesses.length);
 
+    // Check win/lose conditions
     if (element.number === gameState.dailyElement.number) {
       gameState.won = true;
       gameState.gameOver = true;
