@@ -531,3 +531,29 @@ if (document.readyState === 'loading') {
 } else {
   tryInitialize();
 }
+
+// Start New Game button handler
+document.addEventListener('DOMContentLoaded', function() {
+  const startNewGameBtn = document.getElementById('start-new-game-btn');
+  if (startNewGameBtn) {
+    startNewGameBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      console.log('[elementle] Start new game clicked');
+
+      // Reset game state
+      gameState.guesses = [];
+      gameState.gameOver = false;
+      gameState.won = false;
+
+      // Clear localStorage
+      try {
+        localStorage.removeItem('elementle_guesses');
+      } catch (e) {
+        console.warn('[elementle] Could not clear localStorage');
+      }
+
+      // Re-initialize the game
+      initializeGame();
+    });
+  }
+});
