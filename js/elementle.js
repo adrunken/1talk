@@ -373,6 +373,21 @@ function getSymbolLetterHighlights(guessSymbol, answerSymbol) {
 // Render guess grid
 function renderGuessGrid() {
   console.log('[elementle] renderGuessGrid called');
+
+  // Verify guesses are still in gameState
+  if (!gameState.guesses || gameState.guesses.length === 0) {
+    console.log('[elementle] No guesses in gameState, attempting to load from localStorage');
+    try {
+      const stored = localStorage.getItem('elementle_guesses');
+      if (stored) {
+        gameState.guesses = JSON.parse(stored);
+        console.log('[elementle] Restored', gameState.guesses.length, 'guesses from localStorage');
+      }
+    } catch (e) {
+      console.warn('[elementle] Could not restore guesses from localStorage:', e);
+    }
+  }
+
   console.log('[elementle] Total guesses to render:', gameState.guesses.length);
   console.log('[elementle] Guess names:', gameState.guesses.map(g => g.name).join(', '));
 
@@ -404,7 +419,7 @@ function renderGuessGrid() {
 
     // Only render if we have a guess for this position
     const hasGuess = i <= gameState.guesses.length;
-    console.log('[elementle] Cell', i, '- has guess:', hasGuess);
+    console.log('[elementle] Cell', i, '- has guess:', hasGuess, '- gameState.guesses.length:', gameState.guesses.length);
 
     if (i <= gameState.guesses.length) {
       console.log('[elementle] Rendering guess', i, ':', gameState.guesses[i - 1].name);
