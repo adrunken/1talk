@@ -280,8 +280,14 @@ function makeGuess() {
     input.value = '';
     removeAutocompleteList();
 
+    // Debug: Check state before rendering
+    debugGameState();
+
     // Render the grid with all guesses
     renderGuessGrid();
+
+    // Debug: Check state after rendering
+    debugGameState();
 
     // Check win/lose conditions
     if (element.number === gameState.dailyElement.number) {
