@@ -490,6 +490,35 @@ a.additional-info:hover {
   margin-top: 20px;
 }
 
+/* Game Actions */
+.game-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 30px;
+  margin-bottom: 20px;
+}
+
+.start-new-game-button {
+  font-size: 16px;
+  padding: 12px 24px;
+  border: 2px solid white;
+  background-color: green;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: bold;
+}
+
+.start-new-game-button:hover {
+  background-color: rgb(0, 155, 0);
+}
+
+.start-new-game-button:disabled {
+  background-color: rgb(100, 100, 100);
+  cursor: not-allowed;
+}
+
 /*Footer styles*/
 footer {
   background-color: #111;
