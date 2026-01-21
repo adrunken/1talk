@@ -233,11 +233,14 @@ function makeGuess() {
     }
 
     console.log('[elementle] Adding guess:', element.name);
+    console.log('[elementle] Guesses before push:', gameState.guesses.length);
     gameState.guesses.push(element);
+    console.log('[elementle] Guesses after push:', gameState.guesses.length);
 
     // Try to save to localStorage with error handling
     try {
       localStorage.setItem('elementle_guesses', JSON.stringify(gameState.guesses));
+      console.log('[elementle] Saved to localStorage, count:', gameState.guesses.length);
     } catch (e) {
       console.warn('[elementle] Cannot write to localStorage:', e);
     }
@@ -245,7 +248,9 @@ function makeGuess() {
     input.value = '';
     removeAutocompleteList();
 
+    console.log('[elementle] About to render grid, guesses count:', gameState.guesses.length);
     renderGuessGrid();
+    console.log('[elementle] After render grid, guesses count:', gameState.guesses.length);
 
     if (element.number === gameState.dailyElement.number) {
       gameState.won = true;
