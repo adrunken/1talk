@@ -346,8 +346,9 @@ function getSymbolLetterHighlights(guessSymbol, answerSymbol) {
 
 // Render guess grid
 function renderGuessGrid() {
-  console.log('[elementle] renderGuessGrid called, guesses:', gameState.guesses.length);
-  console.log('[elementle] gameState.guesses content:', JSON.stringify(gameState.guesses.map(g => g.name)));
+  console.log('[elementle] renderGuessGrid called');
+  console.log('[elementle] Total guesses to render:', gameState.guesses.length);
+  console.log('[elementle] Guess names:', gameState.guesses.map(g => g.name).join(', '));
 
   // Check if grid exists
   const grid = document.querySelector('.element-grid');
@@ -355,6 +356,8 @@ function renderGuessGrid() {
     console.error('[elementle] Element grid container not found in DOM!');
     return;
   }
+
+  console.log('[elementle] Grid found with', grid.children.length, 'cells');
 
   for (let i = 1; i <= MAX_GUESSES; i++) {
     let cell = document.querySelector('.js-' + i);
@@ -369,8 +372,13 @@ function renderGuessGrid() {
       continue;
     }
 
+    // Clear the cell
     cell.innerHTML = '';
     cell.className = 'element';
+
+    // Only render if we have a guess for this position
+    const hasGuess = i <= gameState.guesses.length;
+    console.log('[elementle] Cell', i, '- has guess:', hasGuess);
 
     if (i <= gameState.guesses.length) {
       console.log('[elementle] Rendering guess', i, ':', gameState.guesses[i - 1].name);
