@@ -14,7 +14,7 @@ function getDailyElement() {
     return null;
   }
 
-  console.log('getDailyElement called, ELEMENTS count:', ELEMENTS.length);
+  console.log('[elementle] getDailyElement called, ELEMENTS count:', ELEMENTS.length);
   try {
     const today = new Date().toDateString();
     let stored, storedGuesses, storedElement;
@@ -23,21 +23,35 @@ function getDailyElement() {
     try {
       stored = localStorage.getItem('elementle_date');
       storedGuesses = localStorage.getItem('elementle_guesses');
+      console.log('[elementle] localStorage - stored date:', stored, 'today:', today, 'storedGuesses exists:', !!storedGuesses);
     } catch (e) {
-      console.warn('localStorage not available, using memory only');
+      console.warn('[elementle] localStorage not available, using memory only');
       stored = null;
       storedGuesses = null;
     }
 
     if (stored === today && storedGuesses) {
+      console.log('[elementle] Loading guesses from localStorage');
       gameState.guesses = JSON.parse(storedGuesses);
-    } else {
+    } else if (gameState.guesses.length === 0) {
+      // Only clear guesses if we don't already have any
+      console.log('[elementle] No guesses, setting to empty array');
       try {
         localStorage.setItem('elementle_date', today);
       } catch (e) {
-        console.warn('Cannot write to localStorage');
+        console.warn('[elementle] Cannot write to localStorage');
       }
       gameState.guesses = [];
+    } else {
+      // We have guesses but the date doesn't match or storedGuesses is missing
+      // This means we're starting a new day but have unsaved guesses from today
+      console.log('[elementle] Have guesses but date mismatch or missing storedGuesses, saving current guesses');
+      try {
+        localStorage.setItem('elementle_date', today);
+        localStorage.setItem('elementle_guesses', JSON.stringify(gameState.guesses));
+      } catch (e) {
+        console.warn('[elementle] Cannot write to localStorage:', e);
+      }
     }
 
     try {
@@ -91,15 +105,45 @@ function initializeGame() {
     } else {
       console.error('GUESS button (.js-guess-button) not found');
     }
-    document.querySelector('.js-hint-button').addEventListener('click', showHint);
-    document.querySelector('.js-help-button').addEventListener('click', showHelp);
-    document.querySelector('.js-stats-button').addEventListener('click', showStats);
-    document.querySelector('.js-change-mode-button').addEventListener('click', toggleMode);
-    document.querySelector('.js-guess-input').addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') {
-        makeGuess();
-      }
-    });
+
+    const hintBtn = document.querySelector('.js-hint-button');
+    if (hintBtn) {
+      hintBtn.addEventListener('click', showHint);
+    } else {
+      console.warn('HINT button (.js-hint-button) not found');
+    }
+
+    const helpBtn = document.querySelector('.js-help-button');
+    if (helpBtn) {
+      helpBtn.addEventListener('click', showHelp);
+    } else {
+      console.warn('HELP button (.js-help-button) not found');
+    }
+
+    const statsBtn = document.querySelector('.js-stats-button');
+    if (statsBtn) {
+      statsBtn.addEventListener('click', showStats);
+    } else {
+      console.warn('STATS button (.js-stats-button) not found');
+    }
+
+    const changeModeBtn = document.querySelector('.js-change-mode-button');
+    if (changeModeBtn) {
+      changeModeBtn.addEventListener('click', toggleMode);
+    } else {
+      console.warn('CHANGE MODE button (.js-change-mode-button) not found');
+    }
+
+    const guessInput = document.querySelector('.js-guess-input');
+    if (guessInput) {
+      guessInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          makeGuess();
+        }
+      });
+    } else {
+      console.error('Guess input (.js-guess-input) not found');
+    }
 
     // Autocomplete
     setupAutocomplete();
@@ -113,7 +157,12 @@ function initializeGame() {
 function setupAutocomplete() {
   const input = document.querySelector('.js-guess-input');
   const wrapper = document.querySelector('.js-autocomplete-wrapper');
-  
+
+  if (!input || !wrapper) {
+    console.warn('Autocomplete setup: input or wrapper element not found');
+    return;
+  }
+
   input.addEventListener('input', function() {
     const value = this.value.toLowerCase();
     removeAutocompleteList();
@@ -162,51 +211,50 @@ function removeAutocompleteList() {
 // Make a guess
 function makeGuess() {
   try {
-    console.log('makeGuess called');
+    console.log('[elementle] makeGuess called');
     const input = document.querySelector('.js-guess-input');
     if (!input) {
-      console.error('Input element (.js-guess-input) not found');
+      console.error('[elementle] Input element (.js-guess-input) not found');
       return;
     }
 
     const guess = input.value.trim();
-    console.log('Guess value:', guess);
-
     if (!guess) {
-      console.log('Empty guess, returning');
       return;
     }
 
     const element = getElementByName(guess);
-    console.log('Element found:', element);
     if (!element) {
-      console.log('Element not found for:', guess);
+      console.log('[elementle] Element not found for:', guess);
       showPopup('Element not found!');
       return;
     }
 
     if (gameState.guesses.some(g => g.number === element.number)) {
-      console.log('Element already guessed');
+      console.log('[elementle] Element already guessed:', element.name);
       showPopup('Already guessed!');
       return;
     }
 
-    console.log('Adding guess:', element);
+    console.log('[elementle] Adding guess:', element.name);
+    console.log('[elementle] Guesses before push:', gameState.guesses.length);
     gameState.guesses.push(element);
-    console.log('Current guesses:', gameState.guesses);
-    console.log('Daily element:', gameState.dailyElement);
+    console.log('[elementle] Guesses after push:', gameState.guesses.length);
 
     // Try to save to localStorage with error handling
     try {
       localStorage.setItem('elementle_guesses', JSON.stringify(gameState.guesses));
+      console.log('[elementle] Saved to localStorage, count:', gameState.guesses.length);
     } catch (e) {
-      console.warn('Cannot write to localStorage:', e);
+      console.warn('[elementle] Cannot write to localStorage:', e);
     }
 
     input.value = '';
     removeAutocompleteList();
 
+    console.log('[elementle] About to render grid, guesses count:', gameState.guesses.length);
     renderGuessGrid();
+    console.log('[elementle] After render grid, guesses count:', gameState.guesses.length);
 
     if (element.number === gameState.dailyElement.number) {
       gameState.won = true;
@@ -229,69 +277,90 @@ function makeGuess() {
 // Show hint
 function showHint() {
   const hintContainer = document.querySelector('.js-hint-container');
+  if (!hintContainer) {
+    console.warn('Hint container (.js-hint-container) not found');
+    return;
+  }
+
   if (gameState.guesses.length === 0) {
     hintContainer.textContent = 'Make a guess first!';
     return;
   }
-  
+
   const lastGuess = gameState.guesses[gameState.guesses.length - 1];
   const target = gameState.dailyElement;
-  
+
   let hint = '';
   if (lastGuess.number < target.number) {
     hint = `${target.name} has atomic number higher than ${lastGuess.number}`;
   } else {
     hint = `${target.name} has atomic number lower than ${lastGuess.number}`;
   }
-  
+
   hintContainer.textContent = 'Hint: ' + hint;
   hintContainer.classList.add('fade-in-text');
 }
 
 // Render guess grid
 function renderGuessGrid() {
-  console.log('renderGuessGrid called, guesses:', gameState.guesses.length);
+  console.log('[elementle] renderGuessGrid called, guesses:', gameState.guesses.length);
+  console.log('[elementle] gameState.guesses content:', JSON.stringify(gameState.guesses.map(g => g.name)));
+
+  // Check if grid exists
+  const grid = document.querySelector('.element-grid');
+  if (!grid) {
+    console.error('[elementle] Element grid container not found in DOM!');
+    return;
+  }
+
   for (let i = 1; i <= MAX_GUESSES; i++) {
-    const cell = document.querySelector('.js-' + i);
+    let cell = document.querySelector('.js-' + i);
+
+    // Fallback to grid children if querySelector doesn't find the cell
+    if (!cell && grid && grid.children[i - 1]) {
+      cell = grid.children[i - 1];
+    }
+
     if (!cell) {
-      console.warn('Cell .js-' + i + ' not found in DOM');
+      console.warn('[elementle] Cell .js-' + i + ' not found');
       continue;
     }
+
     cell.innerHTML = '';
     cell.className = 'element';
 
     if (i <= gameState.guesses.length) {
-      console.log('Rendering guess', i, ':', gameState.guesses[i - 1]);
+      console.log('[elementle] Rendering guess', i, ':', gameState.guesses[i - 1].name);
       const guessedElement = gameState.guesses[i - 1];
       const isCorrect = guessedElement.number === gameState.dailyElement.number;
-      
+
       if (isCorrect) {
         cell.classList.add('guessed-element', 'correct-guess');
       } else {
         cell.classList.add('guessed-element');
       }
-      
+
       const atomicNumber = document.createElement('div');
       atomicNumber.className = 'atomic-number';
       atomicNumber.textContent = guessedElement.number;
-      
+
       const symbol = document.createElement('div');
       symbol.className = 'symbol';
       symbol.textContent = guessedElement.symbol;
-      
+
       const name = document.createElement('div');
       name.className = 'name';
       name.textContent = guessedElement.name;
-      
+
       const family = document.createElement('div');
       family.className = 'family';
       family.textContent = guessedElement.family;
-      
+
       cell.appendChild(atomicNumber);
       cell.appendChild(symbol);
       cell.appendChild(name);
       cell.appendChild(family);
-      
+
       // Color code by accuracy
       const target = gameState.dailyElement;
       const guessNum = guessedElement.number;
@@ -312,12 +381,17 @@ function renderGuessGrid() {
 // Show share button
 function showShareButton() {
   const container = document.querySelector('.js-share-button');
+  if (!container) {
+    console.warn('Share button container (.js-share-button) not found');
+    return;
+  }
+
   const btn = document.createElement('button');
   btn.className = 'share-button';
   btn.textContent = 'Share';
   btn.onclick = shareResult;
   container.appendChild(btn);
-  
+
   const infoLink = document.createElement('a');
   infoLink.className = 'additional-info';
   infoLink.href = '#';
@@ -326,14 +400,21 @@ function showShareButton() {
     e.preventDefault();
     window.open('https://en.wikipedia.org/wiki/' + gameState.dailyElement.name);
   };
-  
+
   const infoContainer = document.querySelector('.js-additional-info');
-  infoContainer.appendChild(infoLink);
+  if (infoContainer) {
+    infoContainer.appendChild(infoLink);
+  }
 }
 
 // Show reveal answer
 function showRevealAnswer() {
   const container = document.querySelector('.js-reveal-answer');
+  if (!container) {
+    console.warn('Reveal answer container (.js-reveal-answer) not found');
+    return;
+  }
+
   const div = document.createElement('div');
   div.className = 'reveal-answer';
   div.textContent = 'The element was: ' + gameState.dailyElement.name + ' (' + gameState.dailyElement.symbol + ')';
@@ -343,9 +424,13 @@ function showRevealAnswer() {
 // Disable game if over
 function disableGameIfOver() {
   if (gameState.gameOver) {
-    document.querySelector('.js-guess-input').disabled = true;
-    document.querySelector('.js-guess-button').disabled = true;
-    document.querySelector('.js-hint-button').disabled = true;
+    const input = document.querySelector('.js-guess-input');
+    const guessBtn = document.querySelector('.js-guess-button');
+    const hintBtn = document.querySelector('.js-hint-button');
+
+    if (input) input.disabled = true;
+    if (guessBtn) guessBtn.disabled = true;
+    if (hintBtn) hintBtn.disabled = true;
   }
 }
 
@@ -354,15 +439,19 @@ function updateCountdown() {
   const now = new Date();
   const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
   tomorrow.setHours(0, 0, 0, 0);
-  
+
   const timeLeft = tomorrow - now;
   const hours = Math.floor(timeLeft / (60 * 60 * 1000));
   const minutes = Math.floor((timeLeft % (60 * 60 * 1000)) / (60 * 1000));
   const seconds = Math.floor((timeLeft % (60 * 1000)) / 1000);
-  
-  document.querySelector('.js-hours').textContent = String(hours).padStart(2, '0');
-  document.querySelector('.js-minutes').textContent = String(minutes).padStart(2, '0');
-  document.querySelector('.js-seconds').textContent = String(seconds).padStart(2, '0');
+
+  const hoursEl = document.querySelector('.js-hours');
+  const minutesEl = document.querySelector('.js-minutes');
+  const secondsEl = document.querySelector('.js-seconds');
+
+  if (hoursEl) hoursEl.textContent = String(hours).padStart(2, '0');
+  if (minutesEl) minutesEl.textContent = String(minutes).padStart(2, '0');
+  if (secondsEl) secondsEl.textContent = String(seconds).padStart(2, '0');
 }
 
 // Show popup message
@@ -442,3 +531,29 @@ if (document.readyState === 'loading') {
 } else {
   tryInitialize();
 }
+
+// Start New Game button handler
+document.addEventListener('DOMContentLoaded', function() {
+  const startNewGameBtn = document.getElementById('start-new-game-btn');
+  if (startNewGameBtn) {
+    startNewGameBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      console.log('[elementle] Start new game clicked');
+
+      // Reset game state
+      gameState.guesses = [];
+      gameState.gameOver = false;
+      gameState.won = false;
+
+      // Clear localStorage
+      try {
+        localStorage.removeItem('elementle_guesses');
+      } catch (e) {
+        console.warn('[elementle] Could not clear localStorage');
+      }
+
+      // Re-initialize the game
+      initializeGame();
+    });
+  }
+});

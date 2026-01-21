@@ -261,13 +261,13 @@ a.additional-info:hover {
 .element-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  grid-gap: 20px;
+  grid-gap: 12px;
 }
 
 .element {
   position: relative;
-  width: 250px;
-  height: 250px;
+  width: 180px;
+  height: 180px;
   border: 2px solid rgb(97, 97, 97);
   border-radius: 15px;
   background-color: rgb(42, 42, 42);
@@ -286,13 +286,16 @@ a.additional-info:hover {
 
 .name {
   font-size: 20px;
+  color: white;
 }
 
 .atomic-number,
 .family {
   position: absolute;
   color: white;
-  font-size: 20px;
+  font-size: 16px;
+  font-weight: bold;
+  z-index: 10;
 }
 
 .atomic-number {
@@ -309,6 +312,8 @@ a.additional-info:hover {
 
 .symbol {
   font-size: 80px;
+  color: white;
+  font-weight: bold;
 }
 
 .green {
@@ -483,6 +488,35 @@ a.additional-info:hover {
   justify-content: center;
   font-size: 25px;
   margin-top: 20px;
+}
+
+/* Game Actions */
+.game-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 30px;
+  margin-bottom: 20px;
+}
+
+.start-new-game-button {
+  font-size: 16px;
+  padding: 12px 24px;
+  border: 2px solid white;
+  background-color: green;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: bold;
+}
+
+.start-new-game-button:hover {
+  background-color: rgb(0, 155, 0);
+}
+
+.start-new-game-button:disabled {
+  background-color: rgb(100, 100, 100);
+  cursor: not-allowed;
 }
 
 /*Footer styles*/
