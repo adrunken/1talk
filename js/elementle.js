@@ -14,7 +14,7 @@ function getDailyElement() {
     return null;
   }
 
-  console.log('getDailyElement called, ELEMENTS count:', ELEMENTS.length);
+  console.log('[elementle] getDailyElement called, ELEMENTS count:', ELEMENTS.length);
   try {
     const today = new Date().toDateString();
     let stored, storedGuesses, storedElement;
@@ -23,30 +23,34 @@ function getDailyElement() {
     try {
       stored = localStorage.getItem('elementle_date');
       storedGuesses = localStorage.getItem('elementle_guesses');
+      console.log('[elementle] localStorage - stored date:', stored, 'today:', today, 'storedGuesses exists:', !!storedGuesses);
     } catch (e) {
-      console.warn('localStorage not available, using memory only');
+      console.warn('[elementle] localStorage not available, using memory only');
       stored = null;
       storedGuesses = null;
     }
 
     if (stored === today && storedGuesses) {
+      console.log('[elementle] Loading guesses from localStorage');
       gameState.guesses = JSON.parse(storedGuesses);
     } else if (gameState.guesses.length === 0) {
       // Only clear guesses if we don't already have any
+      console.log('[elementle] No guesses, setting to empty array');
       try {
         localStorage.setItem('elementle_date', today);
       } catch (e) {
-        console.warn('Cannot write to localStorage');
+        console.warn('[elementle] Cannot write to localStorage');
       }
       gameState.guesses = [];
     } else {
       // We have guesses but the date doesn't match or storedGuesses is missing
       // This means we're starting a new day but have unsaved guesses from today
+      console.log('[elementle] Have guesses but date mismatch or missing storedGuesses, saving current guesses');
       try {
         localStorage.setItem('elementle_date', today);
         localStorage.setItem('elementle_guesses', JSON.stringify(gameState.guesses));
       } catch (e) {
-        console.warn('Cannot write to localStorage:', e);
+        console.warn('[elementle] Cannot write to localStorage:', e);
       }
     }
 
