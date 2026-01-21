@@ -314,6 +314,28 @@ a.additional-info:hover {
   font-size: 80px;
   color: white;
   font-weight: bold;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2px;
+}
+
+.symbol-letter {
+  display: inline-block;
+  min-width: 0.5em;
+}
+
+.symbol-letter.green {
+  color: rgb(83, 141, 78);
+}
+
+.symbol-letter.yellow {
+  color: rgb(181, 159, 59);
+}
+
+.symbol-letter.gray {
+  color: rgb(100, 100, 100);
+  opacity: 0.6;
 }
 
 .green {
@@ -326,6 +348,16 @@ a.additional-info:hover {
 
 .red {
   color: rgb(217, 48, 37);
+}
+
+.same-type {
+  border: 2px solid rgb(83, 141, 78);
+  box-shadow: 0 0 8px rgba(83, 141, 78, 0.5);
+}
+
+.same-type-family {
+  color: rgb(83, 141, 78);
+  font-weight: bold;
 }
 
 .reveal-answer {
