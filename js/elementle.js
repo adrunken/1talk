@@ -294,41 +294,35 @@ function showHint() {
 
 // Render guess grid
 function renderGuessGrid() {
-  console.log('renderGuessGrid called, guesses:', gameState.guesses.length);
-  console.log('Daily element:', gameState.dailyElement);
+  console.log('[elementle] renderGuessGrid called, guesses:', gameState.guesses.length);
 
   // Check if grid exists
   const grid = document.querySelector('.element-grid');
   if (!grid) {
-    console.error('Element grid container not found in DOM!');
+    console.error('[elementle] Element grid container not found in DOM!');
     return;
   }
-  console.log('Element grid found, children count:', grid.children.length);
 
   for (let i = 1; i <= MAX_GUESSES; i++) {
     let cell = document.querySelector('.js-' + i);
+
+    // Fallback to grid children if querySelector doesn't find the cell
+    if (!cell && grid && grid.children[i - 1]) {
+      cell = grid.children[i - 1];
+    }
+
     if (!cell) {
-      console.warn('Cell .js-' + i + ' not found via querySelector');
-      console.log('Attempting to find cell by checking grid children:');
-      if (grid && grid.children[i - 1]) {
-        cell = grid.children[i - 1];
-        console.log('Found cell as grid child at index', i - 1);
-      } else {
-        console.error('Cell not found at grid index', i - 1);
-        continue;
-      }
-    } else {
-      console.log('Found cell .js-' + i + ', current content:', cell.innerHTML);
+      console.warn('[elementle] Cell .js-' + i + ' not found');
+      continue;
     }
 
     cell.innerHTML = '';
     cell.className = 'element';
 
     if (i <= gameState.guesses.length) {
-      console.log('Rendering guess', i, ':', gameState.guesses[i - 1]);
+      console.log('[elementle] Rendering guess', i, ':', gameState.guesses[i - 1].name);
       const guessedElement = gameState.guesses[i - 1];
       const isCorrect = guessedElement.number === gameState.dailyElement.number;
-      console.log('Guess element:', guessedElement.name, 'Symbol:', guessedElement.symbol, 'isCorrect:', isCorrect);
 
       if (isCorrect) {
         cell.classList.add('guessed-element', 'correct-guess');
@@ -339,50 +333,37 @@ function renderGuessGrid() {
       const atomicNumber = document.createElement('div');
       atomicNumber.className = 'atomic-number';
       atomicNumber.textContent = guessedElement.number;
-      console.log('Created atomic number div:', atomicNumber.textContent);
 
       const symbol = document.createElement('div');
       symbol.className = 'symbol';
       symbol.textContent = guessedElement.symbol;
-      console.log('Created symbol div:', symbol.textContent);
 
       const name = document.createElement('div');
       name.className = 'name';
       name.textContent = guessedElement.name;
-      console.log('Created name div:', name.textContent);
 
       const family = document.createElement('div');
       family.className = 'family';
       family.textContent = guessedElement.family;
-      console.log('Created family div:', family.textContent);
 
       cell.appendChild(atomicNumber);
-      console.log('Appended atomic number');
       cell.appendChild(symbol);
-      console.log('Appended symbol');
       cell.appendChild(name);
-      console.log('Appended name');
       cell.appendChild(family);
-      console.log('Appended family');
 
       // Color code by accuracy
       const target = gameState.dailyElement;
       const guessNum = guessedElement.number;
       const targetNum = target.number;
       const difference = Math.abs(guessNum - targetNum);
-      console.log('Color coding: guessNum:', guessNum, 'targetNum:', targetNum, 'difference:', difference);
 
       if (isCorrect) {
         symbol.classList.add('green');
-        console.log('Added green class to symbol');
       } else if (difference <= 5) {
         symbol.classList.add('yellow');
-        console.log('Added yellow class to symbol');
       } else {
         symbol.classList.add('red');
-        console.log('Added red class to symbol');
       }
-      console.log('Cell rendered, final innerHTML:', cell.innerHTML);
     }
   }
 }
