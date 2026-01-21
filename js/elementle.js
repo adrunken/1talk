@@ -4,8 +4,29 @@ let gameState = {
   dailyElement: null,
   guesses: [],
   gameOver: false,
-  won: false
+  won: false,
+  isNewGame: false
 };
+
+// Debug helper function
+function debugGameState() {
+  console.log('=== GAME STATE DEBUG ===');
+  console.log('gameState.guesses.length:', gameState.guesses.length);
+  console.log('gameState.guesses:', gameState.guesses.map(g => ({ number: g.number, name: g.name, symbol: g.symbol })));
+  try {
+    const stored = localStorage.getItem('elementle_guesses');
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      console.log('localStorage guesses count:', parsed.length);
+      console.log('localStorage guesses:', parsed.map(g => ({ number: g.number, name: g.name, symbol: g.symbol })));
+    } else {
+      console.log('localStorage guesses: NONE');
+    }
+  } catch (e) {
+    console.warn('Could not read localStorage:', e);
+  }
+  console.log('========================');
+}
 
 // Get or create daily element
 function getDailyElement() {
@@ -30,7 +51,7 @@ function getDailyElement() {
       storedGuesses = null;
     }
 
-    if (stored === today && storedGuesses) {
+    if (stored === today && storedGuesses && !gameState.isNewGame) {
       console.log('[elementle] Loading guesses from localStorage');
       gameState.guesses = JSON.parse(storedGuesses);
     } else if (gameState.guesses.length === 0) {
@@ -60,17 +81,22 @@ function getDailyElement() {
       storedElement = null;
     }
 
-    if (storedElement) {
+    if (storedElement && !gameState.isNewGame) {
       gameState.dailyElement = JSON.parse(storedElement);
     } else {
-      const seed = new Date(today).getTime();
-      const randomIndex = Math.floor((seed / 1000) % ELEMENTS.length);
+      // Pick a random element (either for "Start New Game" or first time)
+      const randomIndex = Math.floor(Math.random() * ELEMENTS.length);
       gameState.dailyElement = ELEMENTS[randomIndex];
-      try {
-        localStorage.setItem('elementle_element_' + today, JSON.stringify(gameState.dailyElement));
-      } catch (e) {
-        console.warn('Cannot write to localStorage');
+
+      // Store it if not a new game click
+      if (!gameState.isNewGame) {
+        try {
+          localStorage.setItem('elementle_element_' + today, JSON.stringify(gameState.dailyElement));
+        } catch (e) {
+          console.warn('Cannot write to localStorage');
+        }
       }
+      gameState.isNewGame = false;
     }
 
     return gameState.dailyElement;
@@ -138,11 +164,21 @@ function initializeGame() {
     if (guessInput) {
       guessInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
+          e.preventDefault();
           makeGuess();
         }
       });
     } else {
       console.error('Guess input (.js-guess-input) not found');
+    }
+
+    // Prevent form submission from reloading the page
+    const form = document.querySelector('form');
+    if (form) {
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        console.log('[elementle] Form submission prevented');
+      });
     }
 
     // Autocomplete
@@ -211,7 +247,7 @@ function removeAutocompleteList() {
 // Make a guess
 function makeGuess() {
   try {
-    console.log('[elementle] makeGuess called');
+    console.log('[elementle] makeGuess called, current guesses:', gameState.guesses.length);
     const input = document.querySelector('.js-guess-input');
     if (!input) {
       console.error('[elementle] Input element (.js-guess-input) not found');
@@ -236,26 +272,34 @@ function makeGuess() {
       return;
     }
 
-    console.log('[elementle] Adding guess:', element.name);
-    console.log('[elementle] Guesses before push:', gameState.guesses.length);
+    // Add the guess
     gameState.guesses.push(element);
-    console.log('[elementle] Guesses after push:', gameState.guesses.length);
+    console.log('[elementle] Added guess:', element.name, '| Total guesses now:', gameState.guesses.length);
+    console.log('[elementle] All guesses:', gameState.guesses.map(g => g.name).join(', '));
 
-    // Try to save to localStorage with error handling
+    // Save to localStorage immediately
     try {
-      localStorage.setItem('elementle_guesses', JSON.stringify(gameState.guesses));
-      console.log('[elementle] Saved to localStorage, count:', gameState.guesses.length);
+      const guessesJson = JSON.stringify(gameState.guesses);
+      localStorage.setItem('elementle_guesses', guessesJson);
+      console.log('[elementle] Saved', gameState.guesses.length, 'guesses to localStorage');
     } catch (e) {
       console.warn('[elementle] Cannot write to localStorage:', e);
     }
 
+    // Clear input
     input.value = '';
     removeAutocompleteList();
 
-    console.log('[elementle] About to render grid, guesses count:', gameState.guesses.length);
-    renderGuessGrid();
-    console.log('[elementle] After render grid, guesses count:', gameState.guesses.length);
+    // Debug: Check state before rendering
+    debugGameState();
 
+    // Render the grid with all guesses
+    renderGuessGrid();
+
+    // Debug: Check state after rendering
+    debugGameState();
+
+    // Check win/lose conditions
     if (element.number === gameState.dailyElement.number) {
       gameState.won = true;
       gameState.gameOver = true;
@@ -301,10 +345,61 @@ function showHint() {
   hintContainer.classList.add('fade-in-text');
 }
 
+// Helper function to get letter highlights for a guess symbol (Wordle-style)
+function getSymbolLetterHighlights(guessSymbol, answerSymbol) {
+  const guessUpper = guessSymbol.toUpperCase();
+  const answerUpper = answerSymbol.toUpperCase();
+
+  // Track which letters in answer have been matched
+  const answerLetterCounts = {};
+  for (let char of answerUpper) {
+    answerLetterCounts[char] = (answerLetterCounts[char] || 0) + 1;
+  }
+
+  // First pass: mark correct positions
+  const highlights = new Array(guessUpper.length).fill(null);
+  for (let i = 0; i < guessUpper.length; i++) {
+    if (guessUpper[i] === answerUpper[i]) {
+      highlights[i] = 'green';
+      answerLetterCounts[guessUpper[i]]--;
+    }
+  }
+
+  // Second pass: mark wrong positions (yellow) or not in answer (gray)
+  for (let i = 0; i < guessUpper.length; i++) {
+    if (highlights[i] === null) {
+      if (answerLetterCounts[guessUpper[i]] > 0) {
+        highlights[i] = 'yellow';
+        answerLetterCounts[guessUpper[i]]--;
+      } else {
+        highlights[i] = 'gray';
+      }
+    }
+  }
+
+  return highlights;
+}
+
 // Render guess grid
 function renderGuessGrid() {
-  console.log('[elementle] renderGuessGrid called, guesses:', gameState.guesses.length);
-  console.log('[elementle] gameState.guesses content:', JSON.stringify(gameState.guesses.map(g => g.name)));
+  console.log('[elementle] renderGuessGrid called');
+
+  // Verify guesses are still in gameState
+  if (!gameState.guesses || gameState.guesses.length === 0) {
+    console.log('[elementle] No guesses in gameState, attempting to load from localStorage');
+    try {
+      const stored = localStorage.getItem('elementle_guesses');
+      if (stored) {
+        gameState.guesses = JSON.parse(stored);
+        console.log('[elementle] Restored', gameState.guesses.length, 'guesses from localStorage');
+      }
+    } catch (e) {
+      console.warn('[elementle] Could not restore guesses from localStorage:', e);
+    }
+  }
+
+  console.log('[elementle] Total guesses to render:', gameState.guesses.length);
+  console.log('[elementle] Guess names:', gameState.guesses.map(g => g.name).join(', '));
 
   // Check if grid exists
   const grid = document.querySelector('.element-grid');
@@ -312,6 +407,8 @@ function renderGuessGrid() {
     console.error('[elementle] Element grid container not found in DOM!');
     return;
   }
+
+  console.log('[elementle] Grid found with', grid.children.length, 'cells');
 
   for (let i = 1; i <= MAX_GUESSES; i++) {
     let cell = document.querySelector('.js-' + i);
@@ -326,18 +423,30 @@ function renderGuessGrid() {
       continue;
     }
 
+    // Clear the cell
     cell.innerHTML = '';
     cell.className = 'element';
+
+    // Only render if we have a guess for this position
+    const hasGuess = i <= gameState.guesses.length;
+    console.log('[elementle] Cell', i, '- has guess:', hasGuess, '- gameState.guesses.length:', gameState.guesses.length);
 
     if (i <= gameState.guesses.length) {
       console.log('[elementle] Rendering guess', i, ':', gameState.guesses[i - 1].name);
       const guessedElement = gameState.guesses[i - 1];
-      const isCorrect = guessedElement.number === gameState.dailyElement.number;
+      const target = gameState.dailyElement;
+      const isCorrect = guessedElement.number === target.number;
+      const isSameType = guessedElement.family === target.family;
 
       if (isCorrect) {
         cell.classList.add('guessed-element', 'correct-guess');
       } else {
         cell.classList.add('guessed-element');
+      }
+
+      // Apply element type highlighting (green if same family)
+      if (isSameType && !isCorrect) {
+        cell.classList.add('same-type');
       }
 
       const atomicNumber = document.createElement('div');
@@ -346,7 +455,15 @@ function renderGuessGrid() {
 
       const symbol = document.createElement('div');
       symbol.className = 'symbol';
-      symbol.textContent = guessedElement.symbol;
+
+      // Render symbol with per-letter highlighting (Wordle-style)
+      const symbolHighlights = getSymbolLetterHighlights(guessedElement.symbol, target.symbol);
+      for (let j = 0; j < guessedElement.symbol.length; j++) {
+        const letterSpan = document.createElement('span');
+        letterSpan.textContent = guessedElement.symbol[j];
+        letterSpan.className = 'symbol-letter ' + symbolHighlights[j];
+        symbol.appendChild(letterSpan);
+      }
 
       const name = document.createElement('div');
       name.className = 'name';
@@ -356,24 +473,15 @@ function renderGuessGrid() {
       family.className = 'family';
       family.textContent = guessedElement.family;
 
+      // Apply family highlighting (green if same type)
+      if (isSameType) {
+        family.classList.add('same-type-family');
+      }
+
       cell.appendChild(atomicNumber);
       cell.appendChild(symbol);
       cell.appendChild(name);
       cell.appendChild(family);
-
-      // Color code by accuracy
-      const target = gameState.dailyElement;
-      const guessNum = guessedElement.number;
-      const targetNum = target.number;
-      const difference = Math.abs(guessNum - targetNum);
-
-      if (isCorrect) {
-        symbol.classList.add('green');
-      } else if (difference <= 5) {
-        symbol.classList.add('yellow');
-      } else {
-        symbol.classList.add('red');
-      }
     }
   }
 }
@@ -544,6 +652,7 @@ document.addEventListener('DOMContentLoaded', function() {
       gameState.guesses = [];
       gameState.gameOver = false;
       gameState.won = false;
+      gameState.isNewGame = true;
 
       // Clear localStorage
       try {
@@ -551,6 +660,24 @@ document.addEventListener('DOMContentLoaded', function() {
       } catch (e) {
         console.warn('[elementle] Could not clear localStorage');
       }
+
+      // Re-enable input and buttons
+      const input = document.querySelector('.js-guess-input');
+      const guessBtn = document.querySelector('.js-guess-button');
+      const hintBtn = document.querySelector('.js-hint-button');
+
+      if (input) input.disabled = false;
+      if (guessBtn) guessBtn.disabled = false;
+      if (hintBtn) hintBtn.disabled = false;
+
+      // Clear any previous messages
+      const revealContainer = document.querySelector('.js-reveal-answer');
+      const shareContainer = document.querySelector('.js-share-button');
+      const infoContainer = document.querySelector('.js-additional-info');
+
+      if (revealContainer) revealContainer.innerHTML = '';
+      if (shareContainer) shareContainer.innerHTML = '';
+      if (infoContainer) infoContainer.innerHTML = '';
 
       // Re-initialize the game
       initializeGame();

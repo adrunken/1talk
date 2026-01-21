@@ -268,6 +268,8 @@ a.additional-info:hover {
   position: relative;
   width: 180px;
   height: 180px;
+  min-width: 180px;
+  min-height: 180px;
   border: 2px solid rgb(97, 97, 97);
   border-radius: 15px;
   background-color: rgb(42, 42, 42);
@@ -277,6 +279,7 @@ a.additional-info:hover {
   justify-content: center;
   text-align: center;
   transition: all 0.3s ease;
+  box-sizing: border-box;
 }
 
 .element.guessed-element:hover {
@@ -316,6 +319,24 @@ a.additional-info:hover {
   font-weight: bold;
 }
 
+.symbol-letter {
+  display: inline;
+  white-space: nowrap;
+}
+
+.symbol-letter.green {
+  color: rgb(83, 141, 78);
+}
+
+.symbol-letter.yellow {
+  color: rgb(181, 159, 59);
+}
+
+.symbol-letter.gray {
+  color: rgb(100, 100, 100);
+  opacity: 0.6;
+}
+
 .green {
   color: rgb(83, 141, 78);
 }
@@ -326,6 +347,16 @@ a.additional-info:hover {
 
 .red {
   color: rgb(217, 48, 37);
+}
+
+.same-type {
+  border: 2px solid rgb(83, 141, 78);
+  box-shadow: 0 0 8px rgba(83, 141, 78, 0.5);
+}
+
+.same-type-family {
+  color: rgb(83, 141, 78);
+  font-weight: bold;
 }
 
 .reveal-answer {
@@ -612,8 +643,8 @@ footer {
   opacity: 0.7;
 }
 
-/*Adjusting for screens under 1201px wide*/
-@media (max-width: 1200px) {
+/*Adjusting for screens under 900px wide*/
+@media (max-width: 900px) {
   .footer-nav ul {
     flex-direction: column;
     align-items: center;
