@@ -164,11 +164,21 @@ function initializeGame() {
     if (guessInput) {
       guessInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
+          e.preventDefault();
           makeGuess();
         }
       });
     } else {
       console.error('Guess input (.js-guess-input) not found');
+    }
+
+    // Prevent form submission from reloading the page
+    const form = document.querySelector('form');
+    if (form) {
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        console.log('[elementle] Form submission prevented');
+      });
     }
 
     // Autocomplete
