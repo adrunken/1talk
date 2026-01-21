@@ -30,7 +30,7 @@ function getDailyElement() {
       storedGuesses = null;
     }
 
-    if (stored === today && storedGuesses) {
+    if (stored === today && storedGuesses && !gameState.isNewGame) {
       console.log('[elementle] Loading guesses from localStorage');
       gameState.guesses = JSON.parse(storedGuesses);
     } else if (gameState.guesses.length === 0) {
@@ -60,17 +60,22 @@ function getDailyElement() {
       storedElement = null;
     }
 
-    if (storedElement) {
+    if (storedElement && !gameState.isNewGame) {
       gameState.dailyElement = JSON.parse(storedElement);
     } else {
-      const seed = new Date(today).getTime();
-      const randomIndex = Math.floor((seed / 1000) % ELEMENTS.length);
+      // Pick a random element (either for "Start New Game" or first time)
+      const randomIndex = Math.floor(Math.random() * ELEMENTS.length);
       gameState.dailyElement = ELEMENTS[randomIndex];
-      try {
-        localStorage.setItem('elementle_element_' + today, JSON.stringify(gameState.dailyElement));
-      } catch (e) {
-        console.warn('Cannot write to localStorage');
+
+      // Store it if not a new game click
+      if (!gameState.isNewGame) {
+        try {
+          localStorage.setItem('elementle_element_' + today, JSON.stringify(gameState.dailyElement));
+        } catch (e) {
+          console.warn('Cannot write to localStorage');
+        }
       }
+      gameState.isNewGame = false;
     }
 
     return gameState.dailyElement;
